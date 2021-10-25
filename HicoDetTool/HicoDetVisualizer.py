@@ -80,10 +80,10 @@ if __name__ == '__main__':
 
     visualizer = Visualizer(configp)
     visualizer.show_image(0)
-    '''
+
     for id, datain in enumerate(visualizer.anno[0:]):
         for data in datain["hois"]:
             if(len(data["connections"]) > 1):
                 visualizer.show_image(id)
                 break
-    '''
+
