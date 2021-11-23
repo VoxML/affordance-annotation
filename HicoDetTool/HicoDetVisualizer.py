@@ -79,8 +79,8 @@ if __name__ == '__main__':
     configp.read('config.ini')
 
     visualizer = Visualizer(configp)
-    visualizer.show_image(0)
-
+    visualizer.show_image(25)
+    exit()
     for id, datain in enumerate(visualizer.anno[0:]):
         for data in datain["hois"]:
             if(len(data["connections"]) > 1):
