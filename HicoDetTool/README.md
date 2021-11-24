@@ -20,7 +20,8 @@
 * Change ImageID in Line 82 for other Images.
 * TODO: Support Image Names.
 
-### Pose Data Extracted with AlphaPose
+### Pose Data Extracted with AlphaPose (https://github.com/MVIG-SJTU/AlphaPose)
 * To visualize images with poses, download the following zip and copy the files under data/poses.
 * https://hessenbox-a10.rz.uni-frankfurt.de/getlink/fi7NNa5DLocv3DcUy5HPd3Zz/poses.zip
 * In the config.ini can you referenz on the different pose datasets.
+* (Following models were used: Fast Pose (DUC) -	ResNet152 (MSCOCO), Fast Pose - ResNet50 (Halpe 26), Fast Pose - ResNet50 (Halpe 136))
