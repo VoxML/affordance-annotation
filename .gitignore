@@ -3,3 +3,4 @@ HicoDetTool/.idea/
 HicoDetTool/data/hico_processed/*
 HicoDetTool/data/hico_mat/*
 AffordanceModel/.idea/
+*.pyc

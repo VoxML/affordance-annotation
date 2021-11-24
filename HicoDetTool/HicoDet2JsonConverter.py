@@ -1,5 +1,5 @@
 """
-Heavily inspired from https://github.com/Dong-JinKim/ActionCooccurrencePriors
+Mostly taken from https://github.com/Dong-JinKim/ActionCooccurrencePriors
 """
 
 import configparser
