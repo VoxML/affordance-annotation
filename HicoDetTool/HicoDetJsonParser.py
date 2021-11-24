@@ -6,16 +6,9 @@ from utils.utils import get_iou
 def merge_bboxes(annotation, threshold=0.7):
     """
     Merges BBoxes between multiple Hois
-
-    Parameters
-    ----------
-    annotation : json
-        The annotation for one image
-
-    Returns
-    -------
-    annotation
-        Annotation with merged global bboxes
+    :param annotation: json
+    :param threshold: float
+    :return: json; Merged Annotation with global bboxes
     """
     human_bboxes = []  # List with merged human_bboxes.
     object_bboxes = []  # List with merged object_bboxes.
@@ -84,6 +77,6 @@ if __name__ == "__main__":
     # print_annotation(data[0])
     # print_annotation(data[0])
     print(data[33])
-    merged_anno = merge_bboxes(data[37], configp.getfloat("HICODET", "bbox_merge_threshold"))
+    merged_anno = merge_bboxes(data[37], configp.getfloat("PROCESSING", "bbox_merge_threshold"))
     print(merged_anno)
         
