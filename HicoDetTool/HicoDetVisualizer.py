@@ -31,10 +31,16 @@ class Visualizer:
             self.hoic_dict[hoi["id"]] = (hoi["object"], hoi["verb"])
 
         self.poselist = None
-        if self.config["POSE"]["dataset"] is not None:
-            if os.path.isfile(self.config["POSE"]["dataset"]):
-                with open(self.config["POSE"]["dataset"]) as json_file:
+        if self.config["POSE"]["train_dataset"] is not None:
+            if os.path.isfile(self.config["POSE"]["train_dataset"]):
+                with open(self.config["POSE"]["train_dataset"]) as json_file:
                     self.poselist = json.load(json_file)
+            else:
+                print("Could not find Pose Data")
+
+            if os.path.isfile(self.config["POSE"]["test_dataset"]):
+                with open(self.config["POSE"]["test_dataset"]) as json_file:
+                    self.poselist.extend(json.load(json_file))
             else:
                 print("Could not find Pose Data")
 
@@ -95,7 +101,6 @@ class Visualizer:
         for pose_anno in self.poselist:
             if pose_anno["image_id"] == imgid:
                 keypoints = pose_anno["keypoints"]
-                print(keypoints)
                 j_key = []
                 kp_score = []
 
@@ -104,6 +109,7 @@ class Visualizer:
                     kp_score.append([keypoints[i+2]])
                 resultjson.append({"keypoints": torch.tensor(j_key), "kp_score": torch.tensor(kp_score)}) #, "box": d["box"]})
         # image channel RGB->BGR https://github.com/MVIG-SJTU/AlphaPose/blob/bcfbc997526bcac464d116356ac2efea9483ff68/scripts/demo_api.py#L192
+        # Not needed here. Bet to avoid confusion, if someone saves the image beforehand.
         img = np.array(img, dtype=np.uint8)[:, :, ::-1]
         img = vis_frame(img, {"result": resultjson})  # visulize the pose result
         img = np.array(img, dtype=np.uint8)[:, :, ::-1]
