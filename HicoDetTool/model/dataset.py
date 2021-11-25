@@ -33,13 +33,14 @@ class HicoDetAffordanceDataset(Dataset):
 
         self.hoi_annotaion = load_hoi_annotation(config.get("HICODET", "hoi_annotation"))
 
-        self.image_list, self.label_list = self.prepare_data()
+        self.image_list, self.label_list, self.hoi_list = self.prepare_data()
 
         self.transform = transform
 
     def prepare_data(self):
         image_list = []
         label_list = []
+        hoi_list = []
         for hico_anno in self.hico_annotation:
             if self.train:
                 if "test2015" in hico_anno["global_id"]:
@@ -53,6 +54,7 @@ class HicoDetAffordanceDataset(Dataset):
                 hoid_id = hoi["id"]
                 obj, verb = self.hoic_dict[hoid_id]
                 aff_type_list.append(self.hoi_annotaion[(obj, verb)])
+                hoi_list.append((obj, verb))
             if "T" in aff_type_list:
                 label_list.append(2)
             elif "G" in aff_type_list:
@@ -60,7 +62,7 @@ class HicoDetAffordanceDataset(Dataset):
             else:
                 label_list.append(0)
 
-        return image_list, label_list
+        return image_list, label_list, hoi_list
 
     def __len__(self):
         return len(self.label_list)
@@ -72,7 +74,7 @@ class HicoDetAffordanceDataset(Dataset):
         img_name = os.path.join(self.image_folder,
                                 self.image_list[idx])
 
-        image = Image.open(img_name).convert('RGB')
+        image = Image.open(img_name).convert('RGB')  # There are some greyscaale images in hicodet
 
         if self.transform:
             image = self.transform(image)
@@ -80,9 +82,9 @@ class HicoDetAffordanceDataset(Dataset):
         label = self.label_list[idx]
         label = np.array(label)
         label = label.astype('long')
-        sample = {'image': image, 'label': label}
 
-
+        hoi = self.hoi_list[idx]
+        sample = {'image': image, 'label': label, 'hoi_list': hoi}
 
         return sample
 
@@ -98,7 +100,7 @@ if __name__ == "__main__":
             transforms.ToTensor(),
             transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         ])
-    dset = HicoDetAffordanceDataset(configp, trans)
+    dset = HicoDetAffordanceDataset(configp, trans, True)
     lablis = dset.label_list
     print(len(lablis))
     print(lablis.count(2))

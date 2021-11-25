@@ -9,6 +9,8 @@ import configparser
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from sklearn.metrics import f1_score, precision_score, recall_score
+import wandb
 import numpy as np
 import torchvision
 from torchvision import datasets, models, transforms
@@ -41,6 +43,8 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             running_loss = 0.0
             running_corrects = 0
 
+            epoch_gold = []
+            epoch_pred = []
             # Iterate over data.
             for data in tqdm(dataloaders[phase]):
                 inputs = data["image"]
@@ -79,8 +83,19 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects += torch.sum(preds == labels.data)
 
+                epoch_gold.extend(labels.cpu().detach().numpy())
+                epoch_pred.extend(preds.cpu().detach().numpy())
+
             epoch_loss = running_loss / len(dataloaders[phase].dataset)
             epoch_acc = running_corrects.double() / len(dataloaders[phase].dataset)
+
+            epoch_prec_micro = precision_score(epoch_gold, epoch_pred, average='micro')
+            epoch_prec_macro = precision_score(epoch_gold, epoch_pred, average='macro')
+            epoch_recall_micro = recall_score(epoch_gold, epoch_pred, average='micro')
+            epoch_recall_macro = recall_score(epoch_gold, epoch_pred, average='macro')
+            epoch_f1_micro = f1_score(epoch_gold, epoch_pred, average='micro')
+            epoch_f1_macro = f1_score(epoch_gold, epoch_pred, average='macro')
+            epoch_f1_weighted = f1_score(epoch_gold, epoch_pred, average='weighted')
 
             print('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
 
@@ -88,8 +103,20 @@ def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, is_ince
             if phase == 'val' and epoch_acc > best_acc:
                 best_acc = epoch_acc
                 best_model_wts = copy.deepcopy(model.state_dict())
+
             if phase == 'val':
                 val_acc_history.append(epoch_acc)
+                wandb.log({"eval_loss": epoch_loss, "eval_acc": epoch_acc,
+                            "eval_prec_micro": epoch_prec_micro, "eval_prec_macro": epoch_prec_macro,
+                            "eval_recall_micro": epoch_recall_micro, "eval_recall_macro": epoch_recall_macro,
+                            "eval_f1_micro": epoch_f1_micro, "eval_f1_macro": epoch_f1_macro, "eval_f1_weighted": epoch_f1_weighted}, step=epoch)
+
+                wandb.log({"conf_mat": wandb.plot.confusion_matrix(probs=None, y_true=epoch_gold, preds=epoch_pred, class_names=["-", "G", "T"])}, step=epoch)
+            else:
+                wandb.log({"epoch": epoch, "train_loss": epoch_loss, "train_acc": epoch_acc,
+                            "train_prec_micro": epoch_prec_micro, "train_prec_macro": epoch_prec_macro,
+                            "train_recall_micro": epoch_recall_micro, "train_recall_macro": epoch_recall_macro,
+                            "train_f1_micro": epoch_f1_micro, "train_f1_macro": epoch_f1_macro, "train_f1_weighted": epoch_f1_weighted})
 
         print()
 
@@ -112,67 +139,93 @@ if __name__ == "__main__":
     num_epochs = configp.getint("MODEL", "num_epochs")
     data_dir = configp.get("HICODET", "hico_images")
     num_classes = 3
+    # lr = 0.001
+    # optimizer = "sgd"
+    for model_name in ["resnet", "vgg", "inception"]:
+        for lr in [0.01, 0.001,  0.001, 0.0001]:
+            for optimizer in ["sgd", "adam", "adamw", "adagrad"]:
+                for transform in [True, False]:
+                    wandb.init(project="affordance_image", config={"model_name": model_name, "lr": lr, "opimizer": optimizer})
 
-    model_ft, input_size = initialize_model(model_name, num_classes, feature_extract, use_pretrained=True)
+                    model_ft, input_size = initialize_model(model_name, num_classes, feature_extract, use_pretrained=True)
+                    wandb.watch(model_ft, log_freq=100)
+                    # Data augmentation and normalization for training
+                    # Just normalization for validation
+                    if transform:
+                        data_transforms = {
+                            'train': transforms.Compose([
+                                transforms.RandomResizedCrop(input_size),
+                                transforms.RandomHorizontalFlip(),
+                                transforms.ToTensor(),
+                                #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                            ]),
+                            'val': transforms.Compose([
+                                transforms.Resize(input_size),
+                                transforms.CenterCrop(input_size),
+                                transforms.ToTensor(),
+                                #transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+                            ]),
+                        }
+                    else:
+                        data_transforms = {
+                            'train': None,
+                            'val': None,
+                        }
 
-    # Data augmentation and normalization for training
-    # Just normalization for validation
-    data_transforms = {
-        'train': transforms.Compose([
-            transforms.RandomResizedCrop(input_size),
-            transforms.RandomHorizontalFlip(),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-        'val': transforms.Compose([
-            transforms.Resize(input_size),
-            transforms.CenterCrop(input_size),
-            transforms.ToTensor(),
-            transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        ]),
-    }
+                    print("Initializing Datasets and Dataloaders...")
 
-    print("Initializing Datasets and Dataloaders...")
+                    # Create training and validation datasets
+                    image_datasets = {"train": HicoDetAffordanceDataset(config=configp, transform=data_transforms["train"],train=True),
+                                      "val": HicoDetAffordanceDataset(config=configp, transform=data_transforms["val"], train=False)}
+                    # Create training and validation dataloaders
+                    dataloaders_dict = {
+                        x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
+                        ['train', 'val']}
 
-    # Create training and validation datasets
-    image_datasets = {"train": HicoDetAffordanceDataset(config=configp, transform=data_transforms["train"],train=True),
-                      "val": HicoDetAffordanceDataset(config=configp, transform=data_transforms["val"], train=False)}
-    # Create training and validation dataloaders
-    dataloaders_dict = {
-        x: torch.utils.data.DataLoader(image_datasets[x], batch_size=batch_size, shuffle=True, num_workers=4) for x in
-        ['train', 'val']}
+                    # Detect if we have a GPU available
+                    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    # Detect if we have a GPU available
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+                    # Send the model to GPU
+                    model_ft = model_ft.to(device)
 
-    # Send the model to GPU
-    model_ft = model_ft.to(device)
+                    # Gather the parameters to be optimized/updated in this run. If we are
+                    #  finetuning we will be updating all parameters. However, if we are
+                    #  doing feature extract method, we will only update the parameters
+                    #  that we have just initialized, i.e. the parameters with requires_grad
+                    #  is True.
+                    params_to_update = model_ft.parameters()
+                    print("Params to learn:")
+                    if feature_extract:
+                        params_to_update = []
+                        for name, param in model_ft.named_parameters():
+                            if param.requires_grad == True:
+                                params_to_update.append(param)
+                                print("\t", name)
+                    else:
+                        for name, param in model_ft.named_parameters():
+                            if param.requires_grad == True:
+                                print("\t", name)
 
-    # Gather the parameters to be optimized/updated in this run. If we are
-    #  finetuning we will be updating all parameters. However, if we are
-    #  doing feature extract method, we will only update the parameters
-    #  that we have just initialized, i.e. the parameters with requires_grad
-    #  is True.
-    params_to_update = model_ft.parameters()
-    print("Params to learn:")
-    if feature_extract:
-        params_to_update = []
-        for name, param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                params_to_update.append(param)
-                print("\t", name)
-    else:
-        for name, param in model_ft.named_parameters():
-            if param.requires_grad == True:
-                print("\t", name)
+                    # Observe that all parameters are being optimized
+                    if optimizer == "sgd":
+                        optimizer_ft = optim.SGD(params_to_update, lr=lr, momentum=0.9)
+                    elif optimizer == "adam":
+                        optimizer_ft = optim.Adam(params_to_update, lr=lr)
+                    elif optimizer == "sgd":
+                        optimizer_ft = optim.AdamW(params_to_update, lr=lr)
+                    elif optimizer == "sgd":
+                        optimizer_ft = optim.Adagrad(params_to_update, lr=lr)
+                    else:
+                        print("could not find:", optimizer)
+                        exit()
+                    #optimizer_ft = optim.AdamW(params_to_update, lr=0.01)
+                    # Setup the loss fxn
+                    criterion = nn.CrossEntropyLoss()
 
-    # Observe that all parameters are being optimized
-    optimizer_ft = optim.SGD(params_to_update, lr=0.001, momentum=0.9)
-    #optimizer_ft = optim.AdamW(params_to_update, lr=0.01)
-    # Setup the loss fxn
-    criterion = nn.CrossEntropyLoss()
+                    # Train and evaluate
+                    model_ft, hist = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs,
+                                                 is_inception=(model_name == "inception"), device=device)
 
-    # Train and evaluate
-    model_ft, hist = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs,
-                                 is_inception=(model_name == "inception"), device=device)
-    print(hist)
+                    torch.save(model_ft.state_dict(), f'{model_name}_{optimizer}_{lr}_weights.pth')
+                    torch.save(model_ft, f'{model_name}_{optimizer}_{lr}.pth')
+                    print(hist)
