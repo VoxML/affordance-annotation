@@ -1,5 +1,9 @@
+from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 from torchvision import datasets, models, transforms
 import torch.nn as nn
+from transformers import AutoModel
+from transformers.modeling_outputs import SequenceClassifierOutput
+
 
 def set_parameter_requires_grad(model, feature_extracting):
     if feature_extracting:
@@ -35,7 +39,7 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
     elif model_name == "vgg":
         """ VGG11_bn
         """
-        model_ft = models.vgg11_bn(pretrained=use_pretrained)
+        model_ft = models.vgg19_bn(pretrained=use_pretrained)
         set_parameter_requires_grad(model_ft, feature_extract)
         num_ftrs = model_ft.classifier[6].in_features
         model_ft.classifier[6] = nn.Linear(num_ftrs, num_classes)
@@ -44,7 +48,7 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
     elif model_name == "squeezenet":
         """ Squeezenet
         """
-        model_ft = models.squeezenet1_0(pretrained=use_pretrained)
+        model_ft = models.squeezenet1_1(pretrained=use_pretrained)
         set_parameter_requires_grad(model_ft, feature_extract)
         model_ft.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=(1, 1), stride=(1, 1))
         model_ft.num_classes = num_classes
@@ -53,7 +57,7 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
     elif model_name == "densenet":
         """ Densenet
         """
-        model_ft = models.densenet121(pretrained=use_pretrained)
+        model_ft = models.densenet201(pretrained=use_pretrained)
         set_parameter_requires_grad(model_ft, feature_extract)
         num_ftrs = model_ft.classifier.in_features
         model_ft.classifier = nn.Linear(num_ftrs, num_classes)
@@ -81,3 +85,15 @@ def initialize_model(model_name, num_classes, feature_extract, use_pretrained=Tr
         exit()
 
     return model_ft, input_size
+
+
+def initialize_transformer_models(model_name, num_classes, feature_extract):
+    # Initialize these variables which will be set in this if statement. Each of these
+    #   variables is model specific.
+    model_ft = AutoModelForImageClassification.from_pretrained(model_name)
+    feature_extractor = AutoFeatureExtractor.from_pretrained(model_name)
+    set_parameter_requires_grad(model_ft, feature_extract)
+    num_ftrs = model_ft.classifier.in_features
+    model_ft.classifier = nn.Linear(num_ftrs, num_classes)
+
+    return model_ft, feature_extractor

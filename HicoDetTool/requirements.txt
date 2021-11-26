@@ -7,8 +7,8 @@ opencv-python
 
 torchvision
 #scikit-image
-#transformers
+transformers
 #timm
 Pillow
 #datasets
-#sklearn
+sklearn

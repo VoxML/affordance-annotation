@@ -16,7 +16,7 @@ from torchvision import datasets, models, transforms
 
 
 class HicoDetAffordanceDataset(Dataset):
-    def __init__(self, config, transform, train: bool):
+    def __init__(self, config, transform, feature_extractor, train: bool):
         self.config = config
         self.train = train
 
@@ -36,6 +36,7 @@ class HicoDetAffordanceDataset(Dataset):
         self.image_list, self.label_list, self.hoi_list = self.prepare_data()
 
         self.transform = transform
+        self.feature_extractor = feature_extractor
 
     def prepare_data(self):
         image_list = []
@@ -78,6 +79,8 @@ class HicoDetAffordanceDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
+        elif self.feature_extractor:
+            image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"][0]
 
         label = self.label_list[idx]
         label = np.array(label)
