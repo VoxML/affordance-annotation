@@ -158,6 +158,10 @@ if __name__ == "__main__":
         for lr in [0.01, 0.001, 0.0001]:
             for optimizer in ["sgd", "adam", "adamw", "adagrad"]:
                 for feature_extract in [True, False]:
+
+                    if os.path.exists(
+                            f'{model_name}_{optimizer}_{lr}_{feature_extract}_weights.pth'):
+                        continue
                     print_model_name = model_name.split("/")[1]
                     run = wandb.init(project="affordance_image", config={"model_name": print_model_name, "lr": lr, "opimizer": optimizer,
                                                                        "feature_extract": feature_extract}, reinit=True)
@@ -195,9 +199,9 @@ if __name__ == "__main__":
                         optimizer_ft = optim.SGD(params_to_update, lr=lr, momentum=0.9)
                     elif optimizer == "adam":
                         optimizer_ft = optim.Adam(params_to_update, lr=lr)
-                    elif optimizer == "sgd":
+                    elif optimizer == "adamw":
                         optimizer_ft = optim.AdamW(params_to_update, lr=lr)
-                    elif optimizer == "sgd":
+                    elif optimizer == "adagrad":
                         optimizer_ft = optim.Adagrad(params_to_update, lr=lr)
                     else:
                         print("could not find:", optimizer)

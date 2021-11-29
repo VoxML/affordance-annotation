@@ -168,11 +168,15 @@ if __name__ == "__main__":
     num_classes = 3
     # lr = 0.001
     # optimizer = "sgd"
-    for model_name in ["resnet", "vgg", "squeezenet", "densenet201", "inception"]:
+    for model_name in ["resnet", "vgg", "squeezenet", "densenet", "inception"]:
         for lr in [0.01, 0.001, 0.0001]:
             for optimizer in ["sgd", "adam", "adamw", "adagrad"]:
                 for transform in [True, False]:
                     for feature_extract in [True, False]:
+
+                        if os.path.exists(f'{model_name}_{optimizer}_{lr}_{transform}_{feature_extract}_weights.pth'):
+                            continue
+
                         run = wandb.init(project="affordance_image", config={"model_name": model_name, "lr": lr, "opimizer": optimizer,
                                                                        "transform": transform, "feature_extract": feature_extract}, reinit=True)
 
@@ -248,9 +252,9 @@ if __name__ == "__main__":
                             optimizer_ft = optim.SGD(params_to_update, lr=lr, momentum=0.9)
                         elif optimizer == "adam":
                             optimizer_ft = optim.Adam(params_to_update, lr=lr)
-                        elif optimizer == "sgd":
+                        elif optimizer == "adamw":
                             optimizer_ft = optim.AdamW(params_to_update, lr=lr)
-                        elif optimizer == "sgd":
+                        elif optimizer == "adagrad":
                             optimizer_ft = optim.Adagrad(params_to_update, lr=lr)
                         else:
                             print("could not find:", optimizer)

@@ -1,4 +1,5 @@
-from transformers import AutoModelForImageClassification, AutoFeatureExtractor
+from transformers import AutoModelForImageClassification, AutoFeatureExtractor, \
+    AutoModelForSequenceClassification, AutoTokenizer
 from torchvision import datasets, models, transforms
 import torch.nn as nn
 from transformers import AutoModel
@@ -97,3 +98,50 @@ def initialize_transformer_models(model_name, num_classes, feature_extract):
     model_ft.classifier = nn.Linear(num_ftrs, num_classes)
 
     return model_ft, feature_extractor
+
+class PoseModel(nn.Module):
+    def __init__(self, input_size, hidden_size, hidden_size2, dropout, num_classes):
+        super(PoseModel, self).__init__()
+        self.input_size = int(input_size)
+        self.hidden_size2 = hidden_size2
+        print(self.input_size)
+        print(hidden_size)
+        self.l1 = nn.Linear(self.input_size, hidden_size)
+        self.relu = nn.ReLU()
+        self.drop_layer = nn.Dropout(p=dropout)
+        if self.hidden_size2 > 0:
+            self.l2 = nn.Linear(hidden_size, hidden_size2)
+            self.l3 = nn.Linear(hidden_size2, num_classes)
+        else:
+            self.l3 = nn.Linear(hidden_size, num_classes)
+
+    def forward(self, x):
+        out = self.l1(x)
+        out = self.relu(out)
+        out = self.drop_layer(out)
+        if self.hidden_size2 > 0:
+            out = self.l2(out)
+            out = self.relu(out)
+            out = self.drop_layer(out)
+        out = self.l3(out)
+        return out
+
+
+def initialize_pose_model(input_size, hidden_size, hidden_size2, dropout, num_classes):
+    model_ft = PoseModel(input_size, hidden_size, hidden_size2, dropout, num_classes)
+    return model_ft
+
+
+def initialize_bert_model(model_name, num_classes, feature_extract):
+    # Initialize these variables which will be set in this if statement. Each of these
+    #   variables is model specific.
+    model_ft = AutoModelForSequenceClassification.from_pretrained(model_name)
+    print(model_ft)
+    exit()
+    set_parameter_requires_grad(model_ft, feature_extract)
+    num_ftrs = model_ft.classifier.in_features
+    model_ft.classifier = nn.Linear(num_ftrs, num_classes)
+
+    tokenizer = AutoTokenizer.from_pretrained(model_name, num_classes=num_classes)
+
+    return model_ft, tokenizer

@@ -5,6 +5,8 @@ import numpy as np
 import torch
 
 from utils.alphapose import vis_frame,vis_frame_fast
+from utils.utils import get_iou
+
 import cv2
 
 import matplotlib as mpl
@@ -31,6 +33,7 @@ class Visualizer:
             self.hoic_dict[hoi["id"]] = (hoi["object"], hoi["verb"])
 
         self.poselist = None
+        return
         if self.config["POSE"]["train_dataset"] is not None:
             if os.path.isfile(self.config["POSE"]["train_dataset"]):
                 with open(self.config["POSE"]["train_dataset"]) as json_file:
