@@ -296,6 +296,7 @@ class HicoDetImgDescDataset(Dataset):
         sample = {'caption': desc, 'label': label}
         return sample
 
+
 if __name__ == "__main__":
     os.chdir("..")
     configp = configparser.ConfigParser()
