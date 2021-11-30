@@ -10,11 +10,102 @@ import torch
 import configparser
 import numpy as np
 from tqdm import tqdm
-#from skimage import io
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision import datasets, models, transforms
+from torchvision import transforms
 from utils.utils import get_iou
+from transformers import AutoFeatureExtractor
+
+
+class HicoDetAllDataset(Dataset):
+    def __init__(self, config, train: bool, feature_extractor):
+        self.config = config
+        self.train = train
+
+        self.image_folder = config.get("HICODET", "hico_images")
+
+        with open(config.get("HICODET", "anno_list_json")) as json_file:
+            self.hico_annotation = json.load(json_file)
+
+        with open(self.config["HICODET"]["hoi_list_json"]) as json_file:
+            hoi_list = json.load(json_file)
+        self.hoic_dict = {}
+        for hoi in hoi_list:
+            self.hoic_dict[hoi["id"]] = (hoi["object"], hoi["verb"])
+
+        with open(self.config["POSE"]["desc_dataset"]) as json_file:
+            self.image_desc = json.load(json_file)
+
+        self.hoi_annotaion = load_hoi_annotation(config.get("HICODET", "hoi_annotation"))
+
+        self.image_list, self.caption_list, self.label_list = self.prepare_data()
+        assert len(self.image_list) == len(self.label_list)
+        assert len(self.caption_list) == len(self.label_list)
+
+        self.feature_extractor = feature_extractor
+
+
+    def prepare_data(self):
+        image_list = []
+        caption_list = []
+        label_list = []
+        for hico_anno in tqdm(self.hico_annotation):
+            if self.train:
+                if "test2015" in hico_anno["global_id"]:
+                    continue
+            else:
+                if "train2015" in hico_anno["global_id"]:
+                    continue
+            image_list.append(hico_anno["image_path_postfix"])
+
+            img_file = hico_anno["image_path_postfix"].split("/")[1]
+
+            for desc in self.image_desc[img_file]:
+                if desc['pretrained_model'] == "coco_weights.pt" and (desc['use_beam_search'] == "True") == False:
+                    generated_text = desc["generated_text"].strip()
+                    generated_text = generated_text[0].upper() + generated_text[1:]
+                    if generated_text[-1] != ".":
+                        generated_text += "."
+
+                    caption_list.append(generated_text)
+                    break
+
+            aff_type_list = []
+            for hoi in hico_anno["hois"]:
+                hoid_id = hoi["id"]
+                obj, verb = self.hoic_dict[hoid_id]
+                aff_type_list.append(self.hoi_annotaion[(obj, verb)])
+            if "T" in aff_type_list:
+                label_list.append(2)
+            elif "G" in aff_type_list:
+                label_list.append(1)
+            else:
+                label_list.append(0)
+
+        return image_list, caption_list, label_list
+
+    def __len__(self):
+        return len(self.label_list)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+
+        img_name = os.path.join(self.image_folder,
+                                self.image_list[idx])
+
+        image = Image.open(img_name).convert('RGB')  # There are some greyscaale images in hicodet
+        image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"][0]
+
+        desc = self.caption_list[idx]
+
+        label = self.label_list[idx]
+        label = np.array(label)
+        label = label.astype('long')
+
+        sample = {'pixel_values': image, 'caption': desc, 'label': label}
+
+        return sample
 
 
 class HicoDetAffordanceDataset(Dataset):
@@ -52,6 +143,7 @@ class HicoDetAffordanceDataset(Dataset):
                 if "train2015" in hico_anno["global_id"]:
                     continue
             image_list.append(hico_anno["image_path_postfix"])
+
             aff_type_list = []
             for hoi in hico_anno["hois"]:
                 hoid_id = hoi["id"]
@@ -82,6 +174,7 @@ class HicoDetAffordanceDataset(Dataset):
             image = self.transform(image)
         elif self.feature_extractor:
             image = self.feature_extractor(images=image, return_tensors="pt")["pixel_values"][0]
+
 
         label = self.label_list[idx]
         label = np.array(label)
@@ -240,7 +333,6 @@ class HicoDetImgDescDataset(Dataset):
         self.caption_list, self.label_list = self.prepare_data()
         assert len(self.caption_list) == len(self.label_list)
 
-
     def prepare_data(self):
         caption_list = []
         label_list = []
@@ -286,8 +378,6 @@ class HicoDetImgDescDataset(Dataset):
             idx = idx.tolist()
 
         desc = self.caption_list[idx]
-        #desc = np.array(desc)
-        #desc = desc.astype('str')
 
         label = self.label_list[idx]
         label = np.array(label)
@@ -302,6 +392,11 @@ if __name__ == "__main__":
     configp = configparser.ConfigParser()
     configp.read('config.ini')
 
+    extracotre = AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+
+    dset = HicoDetAllDataset(configp, False, extracotre)
+    data = dset[0]
+    exit()
     dset = HicoDetAffordanceDataset(configp, None, None, True)
     lablis = dset.label_list
     print(lablis.count(2))

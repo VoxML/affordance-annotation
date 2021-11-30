@@ -1,8 +1,8 @@
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor, \
-    AutoModelForSequenceClassification, AutoTokenizer
+    AutoModelForSequenceClassification, AutoTokenizer, AutoModel, ViTForImageClassification, AutoConfig
 from torchvision import datasets, models, transforms
 import torch.nn as nn
-from transformers import AutoModel
+import torch
 from transformers.modeling_outputs import SequenceClassifierOutput
 
 
@@ -145,3 +145,68 @@ def initialize_bert_model(model_name, num_classes, feature_extract):
     tokenizer = AutoTokenizer.from_pretrained(model_name, num_classes=num_classes)
 
     return model_ft, tokenizer
+
+
+class MergedModel(nn.Module):
+    def __init__(self, image_transformer, bert_transformer, num_classes):
+        super().__init__()
+        self.num_labels = num_classes
+        print("Load Image Model")
+        self.vit = AutoModel.from_pretrained(image_transformer, add_pooling_layer=False)
+
+        #config = AutoConfig.from_pretrained(image_transformer)
+        #self.vit = AutoModel.from_config(config)
+
+        print("Load Bert Model")
+        self.bert = AutoModel.from_pretrained(bert_transformer, add_pooling_layer=True)
+        #config = AutoConfig.from_pretrained(bert_transformer)
+        #self.bert = AutoModel.from_config(config)
+        self.dropout = nn.Dropout(0.1)
+
+        self.classifier = nn.Linear(768 + 768, num_classes)
+
+
+    def forward(self,
+                pixel_values=None, labels=None, #output_attentions=None, output_hidden_states=None,
+                input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None,
+                inputs_embeds=None):
+        print("===========================")
+        vit_outputs = self.vit(pixel_values, return_dict=True)
+        vit_sequence_output = vit_outputs[0]
+        vit_sequence_output = vit_sequence_output[:, 0, :]
+
+        bert_outputs = self.bert(
+            input_ids,
+            attention_mask=attention_mask,
+            token_type_ids=token_type_ids,
+            position_ids=position_ids,
+            head_mask=head_mask,
+            inputs_embeds=inputs_embeds,
+            return_dict=True,
+        )
+        pooled_bert_output = bert_outputs[1]
+        print(vit_sequence_output)
+        print(pooled_bert_output)
+
+        pooled_bert_output = self.dropout(pooled_bert_output)
+        print(vit_sequence_output.size())
+        print(pooled_bert_output.size())
+        concat = torch.cat((vit_sequence_output, pooled_bert_output), dim=1)
+        print(concat.size())
+        logits = self.classifier(concat)
+
+        return SequenceClassifierOutput(
+            logits=logits
+        )
+
+
+def initialize_image_bert_model(image_transformer, bert_transformer, num_classes):
+    model = MergedModel(image_transformer, bert_transformer, num_classes=num_classes)
+
+    print("Load Image Feature Extractor")
+    image_feature_extractor = AutoFeatureExtractor.from_pretrained(image_transformer)
+
+    print("Load Bert Tokanizer")
+    bert_tokenizer = None
+    bert_tokenizer = AutoTokenizer.from_pretrained(bert_transformer)
+    return model, image_feature_extractor, bert_tokenizer
