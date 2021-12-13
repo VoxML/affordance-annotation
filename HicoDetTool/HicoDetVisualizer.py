@@ -4,10 +4,7 @@ import os.path
 import numpy as np
 import torch
 
-from utils.alphapose import vis_frame,vis_frame_fast
-from utils.utils import get_iou
-
-import cv2
+from utils.alphapose import vis_frame
 
 import matplotlib as mpl
 mpl.rcParams['figure.dpi'] = 300
@@ -21,9 +18,11 @@ class Visualizer:
     def __init__(self, config):
         self.config = config
 
-        self.anno = []
+        self.anno_dict = {}
         with open(self.config["HICODET"]["anno_list_json"]) as json_file:
             self.anno = json.load(json_file)
+        for anno in self.anno:
+            self.anno_dict[anno["global_id"]] = anno
 
         self.hoi_list = []
         with open(self.config["HICODET"]["hoi_list_json"]) as json_file:
@@ -47,9 +46,15 @@ class Visualizer:
             else:
                 print("Could not find Pose Data")
 
-
-    def show_image(self, id: int):
-        data = self.anno[id]
+    def show_image(self, id, show=False, save=True):
+        if isinstance(id, int):
+            data = self.anno[id]
+        elif isinstance(id, str):
+            data = self.anno_dict[id]
+            print(data)
+        else:
+            print("Error! Not supported ID Type")
+            exit()
         image_path_postfix = data["image_path_postfix"]
         full_image_path = os.path.join(self.config["HICODET"]["hico_images"], image_path_postfix)
         img = mpimg.imread(full_image_path)
@@ -95,7 +100,10 @@ class Visualizer:
                 ax.add_line(line)
 
         fig.suptitle(data["global_id"], fontsize=16)
-        plt.show()
+        if save:
+            plt.savefig(data["global_id"])
+        if show:
+            plt.show()
 
     def add_pose(self, img, image_path_postfix):
         imgid = image_path_postfix.split("/")[1]
@@ -119,17 +127,17 @@ class Visualizer:
         return img
 
 
-
 if __name__ == '__main__':
     configp = configparser.ConfigParser()
     configp.read('config.ini')
 
     visualizer = Visualizer(configp)
-    visualizer.show_image(0)
+    visualizer.show_image(0, show=False, save=True)
+    visualizer.show_image("HICO_train2015_00036087", show=False, save=True)
     exit()
-    for id, datain in enumerate(visualizer.anno[0:]):
-        for data in datain["hois"]:
-            if(len(data["connections"]) > 1):
-                visualizer.show_image(id)
-                break
+    #for id, datain in enumerate(visualizer.anno[0:]):
+    #    for data in datain["hois"]:
+    #        if(len(data["connections"]) > 1):
+    #            visualizer.show_image(id)
+    #            break
 
