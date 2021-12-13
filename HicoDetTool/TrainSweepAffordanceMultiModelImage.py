@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import division
 
 
-from model.model import initialize_image_bert_model
+from model.model import initialize_transformer_models
 from model.dataset import HicoDetAllDataset
 import configparser
 import torch
@@ -13,12 +13,18 @@ import torch.nn as nn
 import torch.optim as optim
 from sklearn.metrics import f1_score, precision_score, recall_score
 import wandb
+import argparse
+import numpy as np
+import torchvision
+from torchvision import datasets, models, transforms
+import matplotlib.pyplot as plt
 import time
+import os
 import copy
 from tqdm import tqdm
 
 
-def train_model(model, tokenizer, dataloaders, criterion, optimizer, num_epochs=25, device=torch.device("cpu"),
+def train_model(model, dataloaders, criterion, optimizer, num_epochs=25, device=torch.device("cpu"),
                 run=None):
     since = time.time()
 
@@ -38,22 +44,15 @@ def train_model(model, tokenizer, dataloaders, criterion, optimizer, num_epochs=
         epoch_pred = []
 
         for data in tqdm(dataloaders["train"]):
-            pixel_values = data["pixel_values"].to(device)
-            caption = data["caption"]
-            labels = data["label"].long().to(device)
+            inputs = data["pixel_values"]
+            labels = data["label"]
+            inputs = inputs.to(device)
+            labels = labels.to(device).long()
 
-            encoded_input = tokenizer(caption, return_tensors='pt', padding=True, truncation=True)
-            encoded_input = encoded_input.to(device)
-            encoded_input["pixel_values"] = pixel_values
-            #encoded_input["labels"] = labels
-
-            # zero the parameter gradients
             optimizer.zero_grad()
 
-            # forward
-            # track history if only in train
             with torch.set_grad_enabled(True):
-                outputs = model(**encoded_input).logits
+                outputs = model(inputs).logits
                 loss = criterion(outputs, labels)
 
                 _, preds = torch.max(outputs, 1)
@@ -87,19 +86,16 @@ def train_model(model, tokenizer, dataloaders, criterion, optimizer, num_epochs=
         # Each epoch has a training and validation phase
 
         for data in tqdm(dataloaders["val"]):
-            pixel_values = data["pixel_values"].to(device)
-            caption = data["caption"]
-            labels = data["label"].long().to(device)
-
-            encoded_input = tokenizer(caption, return_tensors='pt', padding=True, truncation=True)
-            encoded_input = encoded_input.to(device)
-            encoded_input["pixel_values"] = pixel_values
+            inputs = data["pixel_values"]
+            labels = data["label"]
+            inputs = inputs.to(device)
+            labels = labels.to(device).long()
 
             # zero the parameter gradients
             optimizer.zero_grad()
 
             with torch.set_grad_enabled(False):
-                outputs = model(**encoded_input).logits
+                outputs = model(inputs).logits
                 loss = criterion(outputs, labels)
 
             _, preds = torch.max(outputs, 1)
@@ -127,8 +123,8 @@ def train_model(model, tokenizer, dataloaders, criterion, optimizer, num_epochs=
         if eval_acc > best_acc:
             best_acc = eval_acc
             best_model_wts = copy.deepcopy(model.state_dict())
-        exit()
-        run.log({"epoch": epoch,
+
+        run.log({"epoch": epoch+1,
                  "train_loss": train_loss, "train_acc": train_acc,
                  "train_prec_micro": train_prec_micro, "train_prec_macro": train_prec_macro,
                  "train_recall_micro": train_recall_micro, "train_recall_macro": train_recall_macro,
@@ -157,25 +153,37 @@ if __name__ == "__main__":
     configp = configparser.ConfigParser()
     configp.read('config.ini')
 
-    base_image_model = configp.get("MODEL", "base_image_model")
-    base_bert_model = configp.get("MODEL", "base_bert_model")
-    batch_size = configp.getint("MODEL", "batch_size")
-    num_epochs = configp.getint("MODEL", "num_epochs")
-    learning_rate = configp.getfloat("MODEL", "learning_rate")
-    optimizer = configp.get("MODEL", "optimizer")
-    feature_extract = configp.get("MODEL", "feature_extract")
+    hyperparameter_defaults = dict(
+        base_image_model="google/vit-base-patch16-224-in21k",
+        base_bert_model="bert-base-uncased",
+        batch_size=100,
+        num_epochs=10,
+        learning_rate=0.001,
+        dropout_bert=0.1,
+        dropout_img=0.1,
+        optimizer="adam",
+        feature_extract=True
+    )
 
-    data_dir = configp.get("HICODET", "hico_images")
+
+    data_dir = "../AlphaPose/hico_20160224_det/images"
+    configp["HICODET"]["hico_images"] = data_dir
     num_classes = 3
 
-    """
-        run = wandb.init(project="affordance_merged",
-                     config=configp,
-                     reinit=True)
-    """
+    run = wandb.init(project="affordance_merged",
+                     config=hyperparameter_defaults)
+    config = run.config
+
+    base_image_model = config["base_image_model"]
+    batch_size = config["batch_size"]
+    num_epochs = config["num_epochs"]
+    learning_rate = config["learning_rate"]
+    optimizer = config["optimizer"]
+    feature_extract = config["feature_extract"]
+
     print("Initialize Model")
 
-    model_ft, image_feature_extractor, bert_tokenizer = initialize_image_bert_model(base_image_model, base_bert_model, num_classes, True, 0.1, 0.1)
+    model_ft, image_feature_extractor = initialize_transformer_models(base_image_model, num_classes, feature_extract)
 
     #run.watch(model_ft, log_freq=100)
 
@@ -217,13 +225,11 @@ if __name__ == "__main__":
     else:
         print("could not find:", optimizer)
         exit()
-        # optimizer_ft = optim.AdamW(params_to_update, lr=0.01)
-        # Setup the loss fxn
+
     criterion = nn.CrossEntropyLoss()
 
     # Train and evaluate
-    run=None
-    model_ft, hist = train_model(model_ft, bert_tokenizer, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs,
+    model_ft, hist = train_model(model_ft, dataloaders_dict, criterion, optimizer_ft, num_epochs=num_epochs,
                                  device=device, run=run)
 
     #torch.save(model_ft.state_dict(), f'{print_model_name}_{optimizer}_{lr}_{feature_extract}_weights.pth')

@@ -148,7 +148,7 @@ def initialize_bert_model(model_name, num_classes, feature_extract):
 
 
 class MergedModel(nn.Module):
-    def __init__(self, image_transformer, bert_transformer, num_classes):
+    def __init__(self, image_transformer, bert_transformer, dropout_img, dropout_bert, num_classes):
         super().__init__()
         self.num_labels = num_classes
         print("Load Image Model")
@@ -161,19 +161,20 @@ class MergedModel(nn.Module):
         self.bert = AutoModel.from_pretrained(bert_transformer, add_pooling_layer=True)
         #config = AutoConfig.from_pretrained(bert_transformer)
         #self.bert = AutoModel.from_config(config)
-        self.dropout = nn.Dropout(0.1)
+        self.dropout_img = nn.Dropout(dropout_img)
+        self.dropout_bert = nn.Dropout(dropout_bert)
 
         self.classifier = nn.Linear(768 + 768, num_classes)
 
 
     def forward(self,
-                pixel_values=None, labels=None, #output_attentions=None, output_hidden_states=None,
+                pixel_values=None,
                 input_ids=None, attention_mask=None, token_type_ids=None, position_ids=None, head_mask=None,
                 inputs_embeds=None):
-        print("===========================")
         vit_outputs = self.vit(pixel_values, return_dict=True)
         vit_sequence_output = vit_outputs[0]
         vit_sequence_output = vit_sequence_output[:, 0, :]
+        vit_sequence_output = self.dropout_img(vit_sequence_output)
 
         bert_outputs = self.bert(
             input_ids,
@@ -185,14 +186,9 @@ class MergedModel(nn.Module):
             return_dict=True,
         )
         pooled_bert_output = bert_outputs[1]
-        print(vit_sequence_output)
-        print(pooled_bert_output)
 
-        pooled_bert_output = self.dropout(pooled_bert_output)
-        print(vit_sequence_output.size())
-        print(pooled_bert_output.size())
+        pooled_bert_output = self.dropout_bert(pooled_bert_output)
         concat = torch.cat((vit_sequence_output, pooled_bert_output), dim=1)
-        print(concat.size())
         logits = self.classifier(concat)
 
         return SequenceClassifierOutput(
@@ -200,13 +196,16 @@ class MergedModel(nn.Module):
         )
 
 
-def initialize_image_bert_model(image_transformer, bert_transformer, num_classes):
-    model = MergedModel(image_transformer, bert_transformer, num_classes=num_classes)
+def initialize_image_bert_model(image_transformer, bert_transformer, num_classes, feature_extract, dropout_img, dropout_bert):
+    model_ft = MergedModel(image_transformer, bert_transformer, dropout_img, dropout_bert, num_classes=num_classes)
+    set_parameter_requires_grad(model_ft, feature_extract)
+    num_ftrs = model_ft.classifier.in_features
+    model_ft.classifier = nn.Linear(num_ftrs, num_classes)
 
     print("Load Image Feature Extractor")
     image_feature_extractor = AutoFeatureExtractor.from_pretrained(image_transformer)
 
     print("Load Bert Tokanizer")
-    bert_tokenizer = None
     bert_tokenizer = AutoTokenizer.from_pretrained(bert_transformer)
-    return model, image_feature_extractor, bert_tokenizer
+    return model_ft, image_feature_extractor, bert_tokenizer
+

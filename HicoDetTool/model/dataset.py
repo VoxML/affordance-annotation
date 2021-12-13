@@ -14,7 +14,7 @@ from PIL import Image
 from torch.utils.data import Dataset
 from torchvision import transforms
 from utils.utils import get_iou
-from transformers import AutoFeatureExtractor
+from transformers import AutoFeatureExtractor, AutoModel, AutoModelForImageClassification, DetrForObjectDetection
 
 
 class HicoDetAllDataset(Dataset):
@@ -391,6 +391,32 @@ if __name__ == "__main__":
     os.chdir("..")
     configp = configparser.ConfigParser()
     configp.read('config.ini')
+
+    from transformers import DetrFeatureExtractor, DetrForObjectDetection
+    from PIL import Image
+    import requests
+
+    url = 'http://images.cocodataset.org/val2017/000000039769.jpg'
+    image = Image.open(requests.get(url, stream=True).raw)
+    target_size = torch.IntTensor([[image.height, image.width]])
+    feature_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-50')
+
+    model = DetrForObjectDetection.from_pretrained('facebook/detr-resnet-50')
+
+    print("================================")
+    inputs = feature_extractor(images=image, return_tensors="pt")
+    print(inputs)
+    print("================================")
+    outputs = model(**inputs)
+    print(outputs)
+    print(outputs.logits.size())
+    print(outputs.pred_boxes.size())
+    print("================================")
+    anno = feature_extractor.post_process(outputs, target_size)
+    print(anno)
+    # model predicts bounding boxes and corresponding COCO classes
+    exit()
+    exit()
 
     extracotre = AutoFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
 
