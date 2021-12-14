@@ -6,3 +6,4 @@ HicoDetTool/data/poses/*
 AffordanceModel/.idea/
 *.pyc
 HicoDetTool/SmallJsonMerger.py
+HicoDetTool/wandb/*

@@ -1,0 +1,16 @@
+program: TrainSweepAffordanceMultiModelImage.py
+method: bayes
+metric:
+  name: eval_loss
+  goal: minimize
+parameters:
+  learning_rate:
+    min: 0.0001
+    max: 0.1
+  optimizer:
+    values: ["adam", "sgd", "adamw", "adagrad"]
+  dropout_img:
+    min: 0.1
+    max: 0.5
+  base_image_model:
+    values: ["google/vit-base-patch16-224", "google/vit-large-patch16-224", "google/vit-base-patch16-384", "google/vit-base-patch32-384", "google/vit-large-patch16-384", "google/vit-large-patch32-384"]

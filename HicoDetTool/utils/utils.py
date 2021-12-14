@@ -47,3 +47,15 @@ def get_iou(bb1, bb2):
     assert iou >= 0.0
     assert iou <= 1.0
     return iou
+
+
+def load_hoi_annotation(path):
+    hoi_annotation = {}  # {obj#verb: T/G/-}
+    with open(path) as file:
+        for line in file:
+            splitline = line.split()
+            if len(splitline) > 3:
+                hoi_annotation[(splitline[1], splitline[2])] = splitline[3]
+            else:
+                hoi_annotation[(splitline[1], splitline[2])] = "-"
+    return hoi_annotation

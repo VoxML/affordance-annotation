@@ -1,0 +1,600 @@
+001  airplane        board         T
+002  airplane        direct        
+003  airplane        exit          T
+004  airplane        fly           T
+005  airplane        inspect       T
+006  airplane        load          G
+007  airplane        ride          T
+008  airplane        sit_on        G
+009  airplane        wash          G
+010  airplane        no_interaction
+011  bicycle         carry         G
+012  bicycle         hold          G
+013  bicycle         inspect       T
+014  bicycle         jump          G
+015  bicycle         hop_on        G
+016  bicycle         park          T
+017  bicycle         push          G
+018  bicycle         repair        T
+019  bicycle         ride          T
+020  bicycle         sit_on        G
+021  bicycle         straddle      G
+022  bicycle         walk          G
+023  bicycle         wash          G
+024  bicycle         no_interaction
+025  bird            chase         G
+026  bird            feed          T
+027  bird            hold          G
+028  bird            pet           G
+029  bird            release       
+030  bird            watch         G
+031  bird            no_interaction
+032  boat            board         G
+033  boat            drive         T
+034  boat            exit          G
+035  boat            inspect       T
+036  boat            jump          G
+037  boat            launch        T
+038  boat            repair        T
+039  boat            ride          T
+040  boat            row          T 
+041  boat            sail          T
+042  boat            sit_on        G
+043  boat            stand_on    G  
+044  boat            tie           T
+045  boat            wash          G
+046  boat            no_interaction
+047  bottle          carry         G
+048  bottle          drink_with    T
+049  bottle          hold          G
+050  bottle          inspect       T
+051  bottle          lick          G
+052  bottle          open          T
+053  bottle          pour          G
+054  bottle          no_interaction
+055  bus             board         G
+056  bus             direct        T
+057  bus             drive         T
+058  bus             exit          G
+059  bus             inspect       T
+060  bus             load          T
+061  bus             ride          T
+062  bus             sit_on        G
+063  bus             wash          G
+064  bus             wave          T
+065  bus             no_interaction
+066  car             board         G
+067  car             direct        T
+068  car             drive         T
+069  car             hose          T
+070  car             inspect       T
+071  car             jump          G
+072  car             load          T
+073  car             park          T
+074  car             ride          T
+075  car             wash          G
+076  car             no_interaction
+077  cat             dry           G
+078  cat             feed          T
+079  cat             hold          G
+080  cat             hug           G
+081  cat             kiss          G
+082  cat             pet           G
+083  cat             scratch       G
+084  cat             wash          G
+085  cat             chase         G
+086  cat             no_interaction
+087  chair           carry         G
+088  chair           hold          G
+089  chair           lie_on        G
+090  chair           sit_on        G
+091  chair           stand_on     G 
+092  chair           no_interaction
+093  couch           carry         G
+094  couch           lie_on        G
+095  couch           sit_on        G
+096  couch           no_interaction
+097  cow             feed          T
+098  cow             herd          T
+099  cow             hold          G
+100  cow             hug           G
+101  cow             kiss          G
+102  cow             lasso         G
+103  cow             milk          T
+104  cow             pet           G
+105  cow             ride          T
+106  cow             walk          G
+107  cow             no_interaction
+108  dining_table    clean       T  
+109  dining_table    eat_at       T 
+110  dining_table    sit_at        G
+111  dining_table    no_interaction
+112  dog             carry         G
+113  dog             dry           G
+114  dog             feed          T
+115  dog             groom        T 
+116  dog             hold          G
+117  dog             hose          G
+118  dog             hug           G
+119  dog             inspect       T
+120  dog             kiss          G
+121  dog             pet           G
+122  dog             run           G
+123  dog             scratch       G
+124  dog             straddle      G
+125  dog             train         T
+126  dog             walk          G
+127  dog             wash          G
+128  dog             chase         G
+129  dog             no_interaction
+130  horse           feed          T
+131  horse           groom        T 
+132  horse           hold          G
+133  horse           hug           G
+134  horse           jump          G
+135  horse           kiss          G
+136  horse           load          T
+137  horse           hop_on       G 
+138  horse           pet           G
+139  horse           race          T
+140  horse           ride          T
+141  horse           run           G
+142  horse           straddle     G 
+143  horse           train         T
+144  horse           walk          G
+145  horse           wash          G
+146  horse           no_interaction
+147  motorcycle      hold         G 
+148  motorcycle      inspect      T 
+149  motorcycle      jump          G
+150  motorcycle      hop_on        G
+151  motorcycle      park          T
+152  motorcycle      push          G
+153  motorcycle      race          T
+154  motorcycle      ride          T
+155  motorcycle      sit_on        G
+156  motorcycle      straddle      G
+157  motorcycle      turn          G
+158  motorcycle      walk          G
+159  motorcycle      wash          G
+160  motorcycle      no_interaction
+161  person          carry         G
+162  person          greet        T 
+163  person          hold        G  
+164  person          hug          G 
+165  person          kiss          G
+166  person          stab          G
+167  person          tag           T
+168  person          teach         T
+169  person          lick          G
+170  person          no_interaction
+171  potted_plant    carry       G  
+172  potted_plant    hold          G
+173  potted_plant    hose          G
+174  potted_plant    no_interaction
+175  sheep           carry         G
+176  sheep           feed      G    
+177  sheep           herd   T       
+178  sheep           hold    G      
+179  sheep           hug    G       
+180  sheep           kiss  G        
+181  sheep           pet  G         
+182  sheep           ride   T       
+183  sheep           shear   T      
+184  sheep           walk    G      
+185  sheep           wash        G  
+186  sheep           no_interaction
+187  train           board       G  
+188  train           drive        T 
+189  train           exit   G       
+190  train           load   T       
+191  train           ride      T    
+192  train           sit_on        G
+193  train           wash      G    
+194  train           no_interaction
+195  tv              control    T   
+196  tv              repair      T  
+197  tv              watch      T   
+198  tv              no_interaction
+199  apple           buy     T      
+200  apple           cut       G    
+201  apple           eat    T       
+202  apple           hold    G      
+203  apple           inspect       
+204  apple           peel     T     
+205  apple           pick          G
+206  apple           smell  G       
+207  apple           wash     G     
+208  apple           no_interaction
+209  backpack        carry       G  
+210  backpack        hold       G   
+211  backpack        inspect     T  
+212  backpack        open       T   
+213  backpack        wear         T 
+214  backpack        no_interaction
+215  banana          buy           T
+216  banana          carry         G
+217  banana          cut           G
+218  banana          eat           T
+219  banana          hold          G
+220  banana          inspect       T
+221  banana          peel          T
+222  banana          pick          G
+223  banana          smell         G
+224  banana          no_interaction
+225  baseball_bat    break        G 
+226  baseball_bat    carry         G
+227  baseball_bat    hold          G
+228  baseball_bat    sign          T
+229  baseball_bat    swing         T
+230  baseball_bat    throw         G
+231  baseball_bat    wield         T
+232  baseball_bat    no_interaction
+233  baseball_glove  hold          G
+234  baseball_glove  wear          T
+235  baseball_glove  no_interaction
+236  bear            feed          T
+237  bear            hunt          T
+238  bear            watch         G
+239  bear            no_interaction
+240  bed             clean         T
+241  bed             lie_on        G
+242  bed             sit_on        G
+243  bed             no_interaction
+244  bench           inspect      T 
+245  bench           lie_on        G
+246  bench           sit_on        G
+247  bench           no_interaction
+248  book            carry         G
+249  book            hold          G
+250  book            open          T
+251  book            read          T
+252  book            no_interaction
+253  bowl            hold          G
+254  bowl            stir          T
+255  bowl            wash         G
+256  bowl            lick          G
+257  bowl            no_interaction
+258  broccoli        cut           G
+259  broccoli        eat           T
+260  broccoli        hold          G
+261  broccoli        smell         G
+262  broccoli        stir          T
+263  broccoli        wash         G 
+264  broccoli        no_interaction
+265  cake            blow          T
+266  cake            carry         G
+267  cake            cut           G
+268  cake            eat           T
+269  cake            hold          G
+270  cake            light         T
+271  cake            make         T 
+272  cake            pick_up       G
+273  cake            no_interaction
+274  carrot          carry         G
+275  carrot          cook          T
+276  carrot          cut           G
+277  carrot          eat           T
+278  carrot          hold          G
+279  carrot          peel          T
+280  carrot          smell         G
+281  carrot          stir          T
+282  carrot          wash         G
+283  carrot          no_interaction
+284  cell_phone      carry       G  
+285  cell_phone      hold          G
+286  cell_phone      read          T
+287  cell_phone      repair        T
+288  cell_phone      talk_on       T
+289  cell_phone      text_on       T
+290  cell_phone      no_interaction
+291  clock           check       T  
+292  clock           hold          G
+293  clock           repair        T
+294  clock           set           T
+295  clock           no_interaction
+296  cup             carry         G
+297  cup             drink_with  T  
+298  cup             hold          G
+299  cup             inspect       T
+300  cup             pour          G
+301  cup             sip           T
+302  cup             smell         G
+303  cup             fill          T
+304  cup             wash        G
+305  cup             no_interaction
+306  donut           buy          T 
+307  donut           carry         G
+308  donut           eat           T
+309  donut           hold          G
+310  donut           make          T
+311  donut           pick_up       G
+312  donut           smell         G
+313  donut           no_interaction
+314  elephant        feed          T
+315  elephant        hold          G
+316  elephant        hose          G
+317  elephant        hug           G
+318  elephant        kiss          G
+319  elephant        hop_on       G 
+320  elephant        pet           G
+321  elephant        ride          G
+322  elephant        walk          G
+323  elephant        wash          G
+324  elephant        watch         G
+325  elephant        no_interaction
+326  fire_hydrant    hug           G
+327  fire_hydrant    inspect       T
+328  fire_hydrant    open          T
+329  fire_hydrant    paint         T
+330  fire_hydrant    no_interaction
+331  fork            hold          G
+332  fork            lift          G
+333  fork            stick         G
+334  fork            lick          G
+335  fork            wash          G
+336  fork            no_interaction
+337  frisbee         block         T
+338  frisbee         catch         G
+339  frisbee         hold          G
+340  frisbee         spin          G
+341  frisbee         throw         G
+342  frisbee         no_interaction
+343  giraffe         feed          T
+344  giraffe         kiss          G
+345  giraffe         pet           G
+346  giraffe         ride          T
+347  giraffe         watch        G 
+348  giraffe         no_interaction
+349  hair_drier      hold          G
+350  hair_drier      operate       T
+351  hair_drier      repair        T
+352  hair_drier      no_interaction
+353  handbag         carry         G
+354  handbag         hold          G
+355  handbag         inspect       T
+356  handbag         no_interaction
+357  hot_dog         carry         G
+358  hot_dog         cook          T
+359  hot_dog         cut           G
+360  hot_dog         eat           T
+361  hot_dog         hold          G
+362  hot_dog         make          T
+363  hot_dog         no_interaction
+364  keyboard        carry         G
+365  keyboard        clean         T
+366  keyboard        hold          G
+367  keyboard        type_on      T 
+368  keyboard        no_interaction
+369  kite            assemble      T
+370  kite            carry         G
+371  kite            fly           T
+372  kite            hold          G
+373  kite            inspect       T
+374  kite            launch        T
+375  kite            pull          G
+376  kite            no_interaction
+377  knife           cut_with   T   
+378  knife           hold          G
+379  knife           stick         G
+380  knife           wash          G
+381  knife           wield         T
+382  knife           lick          G
+383  knife           no_interaction
+384  laptop          hold          G
+385  laptop          open          T
+386  laptop          read          T
+387  laptop          repair        T
+388  laptop          type_on      T 
+389  laptop          no_interaction
+390  microwave       clean        T 
+391  microwave       open          T
+392  microwave       operate       T
+393  microwave       no_interaction
+394  mouse           control       T
+395  mouse           hold          G
+396  mouse           repair        T
+397  mouse           no_interaction
+398  orange          buy           T
+399  orange          cut           G
+400  orange          eat           T
+401  orange          hold          G
+402  orange          inspect       T
+403  orange          peel          G
+404  orange          pick          G
+405  orange          squeeze      G 
+406  orange          wash          G
+407  orange          no_interaction
+408  oven            clean         T
+409  oven            hold          G
+410  oven            inspect       T
+411  oven            open          T
+412  oven            repair        T
+413  oven            operate       T
+414  oven            no_interaction
+415  parking_meter   check     T    
+416  parking_meter   pay          T 
+417  parking_meter   repair        T
+418  parking_meter   no_interaction
+419  pizza           buy           T
+420  pizza           carry         G
+421  pizza           cook          T
+422  pizza           cut           G
+423  pizza           eat           T
+424  pizza           hold          G
+425  pizza           make          T
+426  pizza           pick_up       T
+427  pizza           slide         G
+428  pizza           smell         G
+429  pizza           no_interaction
+430  refrigerator    clean         T
+431  refrigerator    hold          G
+432  refrigerator    move          G
+433  refrigerator    open          T
+434  refrigerator    no_interaction
+435  remote          hold          G
+436  remote          point         G
+437  remote          swing         G
+438  remote          no_interaction
+439  sandwich        carry         G
+440  sandwich        cook          T
+441  sandwich        cut           G
+442  sandwich        eat           T
+443  sandwich        hold          G
+444  sandwich        make          T
+445  sandwich        no_interaction
+446  scissors        cut_with      T
+447  scissors        hold          G
+448  scissors        open          T
+449  scissors        no_interaction
+450  sink            clean         T
+451  sink            repair        T
+452  sink            wash          G
+453  sink            no_interaction
+454  skateboard      carry       G  
+455  skateboard      flip          G
+456  skateboard      grind         T
+457  skateboard      hold          G
+458  skateboard      jump          G
+459  skateboard      pick_up       G
+460  skateboard      ride          T
+461  skateboard      sit_on        G
+462  skateboard      stand_on     G 
+463  skateboard      no_interaction
+464  skis            adjust        T
+465  skis            carry         G
+466  skis            hold          G
+467  skis            inspect       T
+468  skis            jump          G
+469  skis            pick_up       G
+470  skis            repair        T
+471  skis            ride          T
+472  skis            stand_on   G   
+473  skis            wear          T
+474  skis            no_interaction
+475  snowboard       adjust   T     
+476  snowboard       carry       G  
+477  snowboard       grind        T 
+478  snowboard       hold          G
+479  snowboard       jump          G
+480  snowboard       ride          T
+481  snowboard       stand_on   G   
+482  snowboard       wear          T
+483  snowboard       no_interaction
+484  spoon           hold          G
+485  spoon           lick          G
+486  spoon           wash          G
+487  spoon           sip           T
+488  spoon           no_interaction
+489  sports_ball     block       T  
+490  sports_ball     carry         G
+491  sports_ball     catch         G
+492  sports_ball     dribble       G
+493  sports_ball     hit           G
+494  sports_ball     hold          G
+495  sports_ball     inspect       T
+496  sports_ball     kick          G
+497  sports_ball     pick_up      G 
+498  sports_ball     serve         T
+499  sports_ball     sign          T
+500  sports_ball     spin          G
+501  sports_ball     throw         G
+502  sports_ball     no_interaction
+503  stop_sign       hold          G
+504  stop_sign       stand_under G   
+505  stop_sign       stop_at       T
+506  stop_sign       no_interaction
+507  suitcase        carry         G
+508  suitcase        drag          G
+509  suitcase        hold          G
+510  suitcase        hug           G
+511  suitcase        load          T
+512  suitcase        open          T
+513  suitcase        pack          T
+514  suitcase        pick_up       G
+515  suitcase        zip           T
+516  suitcase        no_interaction
+517  surfboard       carry        G 
+518  surfboard       drag          G
+519  surfboard       hold          G
+520  surfboard       inspect       T
+521  surfboard       jump          G
+522  surfboard       lie_on        G
+523  surfboard       load          T
+524  surfboard       ride          T
+525  surfboard       stand_on   G   
+526  surfboard       sit_on        G
+527  surfboard       wash          G
+528  surfboard       no_interaction
+529  teddy_bear      carry         G
+530  teddy_bear      hold          G
+531  teddy_bear      hug           G
+532  teddy_bear      kiss          G
+533  teddy_bear      no_interaction
+534  tennis_racket   carry         G
+535  tennis_racket   hold          G
+536  tennis_racket   inspect       T
+537  tennis_racket   swing         T
+538  tennis_racket   no_interaction
+539  tie             adjust        T
+540  tie             cut           G
+541  tie             hold          G
+542  tie             inspect       T
+543  tie             pull          G
+544  tie             tie           T
+545  tie             wear         T 
+546  tie             no_interaction
+547  toaster         hold        G  
+548  toaster         operate     T  
+549  toaster         repair        T
+550  toaster         no_interaction
+551  toilet          clean         T
+552  toilet          flush         T
+553  toilet          open          T
+554  toilet          repair        T
+555  toilet          sit_on        G
+556  toilet          stand_on     G 
+557  toilet          wash          G
+558  toilet          no_interaction
+559  toothbrush      brush_with T    
+560  toothbrush      hold          G
+561  toothbrush      wash          G
+562  toothbrush      no_interaction
+563  traffic_light   install       T
+564  traffic_light   repair        T
+565  traffic_light   stand_under  G  
+566  traffic_light   stop_at       T
+567  traffic_light   no_interaction
+568  truck           direct        T
+569  truck           drive         T
+570  truck           inspect       T
+571  truck           load          T
+572  truck           repair        T
+573  truck           ride          T
+574  truck           sit_on        G
+575  truck           wash          G
+576  truck           no_interaction
+577  umbrella        carry         G
+578  umbrella        hold          G
+579  umbrella        lose          T
+580  umbrella        open          T
+581  umbrella        repair        T
+582  umbrella        set           T
+583  umbrella        stand_under G   
+584  umbrella        no_interaction
+585  vase            hold          G
+586  vase            make          T
+587  vase            paint         T
+588  vase            no_interaction
+589  wine_glass      fill          T
+590  wine_glass      hold         G 
+591  wine_glass      sip           T
+592  wine_glass      toast         T
+593  wine_glass      lick          G
+594  wine_glass      wash          G
+595  wine_glass      no_interaction
+596  zebra           feed          T
+597  zebra           hold          G
+598  zebra           pet           G
+599  zebra           watch         G
+600  zebra           no_interaction
