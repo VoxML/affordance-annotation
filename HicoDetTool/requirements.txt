@@ -4,11 +4,13 @@ scipy
 tqdm
 matplotlib
 opencv-python
+PyQt5
 
-torchvision
+
+#torchvision
 #scikit-image
-transformers
+#transformers
 #timm
-Pillow
+#Pillow
 #datasets
-sklearn
+#sklearn
