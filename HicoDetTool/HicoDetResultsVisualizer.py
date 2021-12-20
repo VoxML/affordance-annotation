@@ -150,6 +150,7 @@ class App(QWidget):
 
         if filename in self.visualizer.anno_dict:
             hico_annotation = self.visualizer.anno_dict[filename]
+            print(hico_annotation)
             hicopath = self.prepare_hicodet_img(hico_annotation)
             pixmap = QPixmap(hicopath)
             pixmap = pixmap.scaled(self.hicodet_label.size(), Qt.KeepAspectRatio)
@@ -213,6 +214,7 @@ class App(QWidget):
 
         save_path = os.path.join("tmp", "PRED_" + filename)
         plt.savefig(save_path)
+        plt.clf()
         return save_path
 
 
@@ -277,6 +279,7 @@ class App(QWidget):
 
         save_path = os.path.join("tmp", "TG_" + data["global_id"])
         plt.savefig(save_path)
+        plt.clf()
         return save_path
 
     def prepare_hicodet_img(self, data):
@@ -326,6 +329,7 @@ class App(QWidget):
                 ax.add_line(line)
         save_path = os.path.join("tmp", "HOI_" + data["global_id"])
         plt.savefig(save_path)
+        plt.clf()
         return save_path
 
 

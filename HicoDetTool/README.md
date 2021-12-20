@@ -25,3 +25,7 @@
 * https://hessenbox-a10.rz.uni-frankfurt.de/getlink/fi7NNa5DLocv3DcUy5HPd3Zz/poses.zip
 * In the config.ini can you referenz on the different pose datasets.
 * (Following models were used: Fast Pose (DUC) -	ResNet152 (MSCOCO), Fast Pose - ResNet50 (Halpe 26), Fast Pose - ResNet50 (Halpe 136))
+
+### Visualize Model Results
+* To use the HicoDetResultsVisualizer.py, download the following model and copy it under data/model.
+* ....

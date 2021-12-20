@@ -1,3 +1,5 @@
+import copy
+
 def get_iou(bb1, bb2):
     """
     Calculate the Intersection over Union (IoU) of two bounding boxes.
@@ -55,6 +57,7 @@ def merge_bboxes(annotation, threshold=0.5):
     :param threshold: float
     :return: json; Merged Annotation with global bboxes
     """
+    annotation = copy.deepcopy(annotation)
     human_bboxes = []  # List with merged human_bboxes.
     object_bboxes = []  # List with merged object_bboxes.
 
