@@ -22,7 +22,7 @@ from .interaction_head import InteractionHead
 
 from .util import box_ops
 from .util.misc import nested_tensor_from_tensor_list
-from transformers import DetrFeatureExtractor, DetrForObjectDetection, DetrConfig
+from transformers import DetrForObjectDetection
 
 
 class UPT(nn.Module):
@@ -165,19 +165,20 @@ class UPT(nn.Module):
 
         return region_props
 
-    def postprocessing(self, boxes, bh, bo, logits, prior, objects, attn_maps, image_sizes):
+    def postprocessing(self, region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes):
         n = [len(b) for b in bh]
         logits = logits.split(n)
 
         detections = []
-        for bx, h, o, lg, pr, obj, attn, size in zip(
-            boxes, bh, bo, logits, prior, objects, attn_maps, image_sizes
+        for rp, h, o, lg, pr, obj, attn, size in zip(
+            region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes
         ):
             pr = pr.prod(0)
             x, y = torch.nonzero(pr).unbind(1)
             scores = torch.sigmoid(lg[x, y])
             detections.append(dict(
-                boxes=bx, pairing=torch.stack([h[x], o[x]]),
+                boxes=rp["boxes"], bscores=rp["scores"], bhs=rp["hidden_states"],
+                pairing=torch.stack([h[x], o[x]]),
                 scores=scores * pr[x, y], labels=y,
                 objects=obj[x], attn_maps=attn, size=size, prior=pr
             ))
@@ -237,13 +238,20 @@ class UPT(nn.Module):
 
         region_props = self.prepare_region_proposals(results, outputs)
 
-        logits, prior, bh, bo, objects, attn_maps = self.interaction_head(
+        logits, prior, bh, bo, objects, attn_maps, unary_tokens = self.interaction_head(
             src, image_sizes, region_props
         )
 
         boxes = [r['boxes'] for r in region_props]
 
-        detections = self.postprocessing(boxes, bh, bo, logits, prior, objects, attn_maps, image_sizes)
+        detections = self.postprocessing(region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes)
+        print("==============")
+        print(detections)
+        print("----")
+        print(src)
+        print("----")
+        print(region_props)
+        print("=============")
         return detections
 
 

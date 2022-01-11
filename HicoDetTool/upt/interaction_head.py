@@ -297,6 +297,7 @@ class InteractionHead(nn.Module):
         object_class_collated = []
         pairwise_tokens_collated = []
         attn_maps_collated = []
+        unary_tokens_collated = []
 
         for b_idx, props in enumerate(region_props):
             boxes = props['boxes']
@@ -351,6 +352,7 @@ class InteractionHead(nn.Module):
 
             # Run the cooperative layer
             unary_tokens, unary_attn = self.coop_layer(unary_tokens, box_pair_spatial_reshaped)
+
             # Generate pairwise tokens with MBF
             pairwise_tokens = torch.cat([
                 self.mbf(
@@ -373,9 +375,10 @@ class InteractionHead(nn.Module):
                 x_keep, y_keep, scores, labels)
             )
             attn_maps_collated.append((unary_attn, pairwise_attn))
+            unary_tokens_collated.append(unary_tokens)
 
         pairwise_tokens_collated = torch.cat(pairwise_tokens_collated)
         logits = self.box_pair_predictor(pairwise_tokens_collated)
 
         return logits, prior_collated, \
-            boxes_h_collated, boxes_o_collated, object_class_collated, attn_maps_collated
+            boxes_h_collated, boxes_o_collated, object_class_collated, attn_maps_collated, unary_tokens_collated

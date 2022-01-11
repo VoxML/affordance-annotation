@@ -158,11 +158,12 @@ class App(QWidget):
 
             # Merge Human and Object BBoxes
             merged_aff = merge_bboxes(hico_annotation, threshold=0.5)
+            print(merged_aff)
             tgpath = self.prepare_tg_img(merged_aff)
             pixmap = QPixmap(tgpath)
             pixmap = pixmap.scaled(self.aff_label.size(), Qt.KeepAspectRatio)
             self.aff_label.setPixmap(pixmap)
-
+        return
         pred_hoi = self.predictor.process_image(img_file)
         tgpath = self.prepare_pred_img(pred_hoi, filename)
         pixmap = QPixmap(tgpath)
@@ -211,6 +212,7 @@ class App(QWidget):
                                         lw=2, color='y',
                                         axes=ax)
                 ax.add_line(line)
+                print(str(hbox) + " - " + str(obox) + " - " + str(obj.item()) + ": " + str(max_idx.item()) + " - " + str(max_score.item()))
 
         save_path = os.path.join("tmp", "PRED_" + filename)
         plt.savefig(save_path)
@@ -259,9 +261,9 @@ class App(QWidget):
         # Draw Telic / Gibsonian Connections
         print(tg_anno_dict)
         for connection, tg in tg_anno_dict.items():
-            h_box = human_bboxes[connection[0]]
+            h_box = human_bboxes[int(connection[0])]
             h_box_center = (h_box[0] + (h_box[2] - h_box[0]) / 2, h_box[1] + (h_box[3] - h_box[1]) / 2)
-            o_box = object_bboxes[connection[1]]
+            o_box = object_bboxes[int(connection[1])]
             o_box_center = (o_box[0] + (o_box[2] - o_box[0]) / 2, o_box[1] + (o_box[3] - o_box[1]) / 2)
             ax.plot(h_box_center[0], h_box_center[1], o_box_center[0], o_box_center[1], marker="o", color="g")
 
