@@ -132,8 +132,8 @@ if __name__ == '__main__':
     configp.read('config.ini')
 
     visualizer = Visualizer(configp)
-    visualizer.show_image(0, show=False, save=True)
-    visualizer.show_image("HICO_train2015_00036087", show=False, save=True)
+    #visualizer.show_image(0, show=False, save=True)
+    visualizer.show_image("HICO_test2015_00000005", show=True, save=False)
     exit()
     #for id, datain in enumerate(visualizer.anno[0:]):
     #    for data in datain["hois"]:

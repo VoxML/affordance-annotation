@@ -14,6 +14,4 @@ for file in files:
 
 feature_extractor = DetrFeatureExtractor.from_pretrained('facebook/detr-resnet-50')
 
-print(images)
 inputs = feature_extractor(images=images, return_tensors="pt")
-print(inputs)

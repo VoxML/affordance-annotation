@@ -1,9 +1,14 @@
+*.pyc
 
 HicoDetTool/.idea/
 HicoDetTool/data/hico_processed/*
 HicoDetTool/data/hico_mat/*
 HicoDetTool/data/poses/*
-AffordanceModel/.idea/
-*.pyc
 HicoDetTool/SmallJsonMerger.py
 HicoDetTool/wandb/*
+HicoDetTool/data/model/*
+HicoDetTool/tmp/*
+
+AffordanceModel/.idea/
+
+
