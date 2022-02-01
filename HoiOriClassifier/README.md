@@ -1,5 +1,10 @@
-# HICO-DAT Tool
+# Habitat Extractor Tool
  
+## Info
+This project is heavily based on the following projects:
+* UPT: https://github.com/fredzzhang/upt?ref=pythonrepo.com
+* PoseContrast: https://github.com/YoungXIAO13/PoseContrast
+
 ## Setup
 
 ### Python enviroment
