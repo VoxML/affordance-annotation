@@ -69,12 +69,11 @@ class ImageProcessor:
             output = self.upt(img)[0]
 
         # Write Results to Dictionary
-        result_dict["boxes"] = output["boxes"].detach().cpu().numpy().tolist()
         result_dict["boxes_scores"] = output["bscores"].detach().cpu().numpy().tolist()
 
         inx = np.array([i for i in range(len(output["objects"])) if i % 2 == 0])
         result_dict["boxes_label"] = output["objects"].detach().cpu().numpy()[inx].tolist()
-        box_label_names = [self.obj_id_to_label[x] for x in result_dict["boxes_label"]]
+        box_label_names = [self.obj_id_to_label[str(x)] for x in result_dict["boxes_label"]]
         result_dict["boxes_label_names"] = box_label_names
 
         result_dict["pairing"] = output["pairing"].detach().cpu().numpy().tolist()
@@ -82,15 +81,18 @@ class ImageProcessor:
         result_dict["pairing_label"] = output["labels"].detach().cpu().numpy().tolist()
 
         pred_h, pred_w = output["size"]
+        remapped_boxes = []
         object_img_list = []
         # Remap ImageSize
         for bbox in output["boxes"]:
             round_w = img_w / pred_w.item()
             round_h = img_h / pred_h.item()
+            remapped_boxes.append([bbox[0].item() * round_w, bbox[1].item() * round_h, bbox[2].item() * round_w, bbox[3].item() * round_h])
             pil_img = image.crop((bbox[0].item() * round_w, bbox[1].item() * round_h, bbox[2].item() * round_w, bbox[3].item() * round_h))
             img = resize_pad(pil_img, 224)
             img, _ = self.normalize(img, None)
             object_img_list.append(img)
+        result_dict["boxes"] = remapped_boxes
 
         object_img_list = torch.stack(object_img_list).to(self.device)
         # Predict Orientation for every Human and Object
@@ -139,7 +141,7 @@ def run(args):
     results = processor.process_images_in_folder(args.input_folder)
 
     with open(args.output_file, 'w') as f:
-        json.dump(results, f, sort_keys=True, indent=3)
+        json.dump(results, f, sort_keys=True)
 
 
 if __name__ == "__main__":

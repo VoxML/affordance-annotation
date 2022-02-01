@@ -30,3 +30,26 @@ This project is heavily based on the following projects:
 * box_score_thresh: Threshold for Object Detection
 * hoi_model: Path to UPT Model
 * pose_model: Path to ContrastPose Model
+
+#### Results
+
+```python
+results =  {"boxes": [[5, 5, 10, 10], [2, 3, 4, 5], [4, 8, 6, 7]], # BBoxes
+           "boxes_label": [1, 19, 32], # BBox Label IDs
+           "boxes_label_names": ["person", "horse", "tie"], # BBox Label Names
+           "boxes_orientation": [{"front": [0, 0, 1], "left": [1, 0, 0], "up": [0, 1, 0]}, {...}, {...}], # BBox Object Orientations
+           "boxes_scores": [0.9, 0.5, 0.6],
+           "pairing": [[0, 0, 0, 0], [1, 1, 2, 2]], #BBox HOI Pairing -> Pairs = (0, 1) and (0, 2). In the first list are only human ids.
+           "pairing_label": [0, 1, 0, 1], # : Gibsonian, 1: Telic
+           "pairing_scores": [0.53, 0.67, 0.12, 0.09] # Scores for pairing_label
+           }
+
+''' *Interpretation*
+[5, 5, 10, 10] = human with probability 0.9
+[2, 3, 4, 5] = horse with probability 0.5
+[4, 8, 6, 7] = tie with probability 0.6
+
+human - horse: 0.53 Gibsonian and 0.67 Telic -> Telic
+human - tie: 0.12 Gibsonian and 0.09 Telic -> None
+'''
+```
