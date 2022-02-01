@@ -31,6 +31,7 @@ def prob_for_list_of_tensors(list_of_tensor):
     probs = sum_stack.softmax(dim=0)
     return probs
 
+
 train_path = os.path.join("D:/Corpora/HICO-DET", "orientation_annotation", "ALL_train.json")
 test_path = os.path.join("D:/Corpora/HICO-DET", "orientation_annotation", "ALL_test.json")
 
