@@ -49,7 +49,7 @@ results =  {"boxes": [[5, 5, 10, 10], [2, 3, 4, 5], [4, 8, 6, 7]], # BBoxes
 [2, 3, 4, 5] = horse with probability 0.5
 [4, 8, 6, 7] = tie with probability 0.6
 
-human - horse: 0.53 Gibsonian and 0.67 Telic -> Telic
-human - tie: 0.12 Gibsonian and 0.09 Telic -> None
+human - horse: 0.53 Gibsonian and 0.67 Telic
+human - tie: 0.12 Gibsonian and 0.09 Telic
 '''
 ```
