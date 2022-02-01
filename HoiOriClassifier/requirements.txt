@@ -1,0 +1,6 @@
+numpy
+tqdm
+Pillow
+torch
+torchvision
+transformers

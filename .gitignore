@@ -9,6 +9,7 @@ HicoDetTool/wandb/*
 HicoDetTool/data/model/*
 HicoDetTool/tmp/*
 
-AffordanceModel/.idea/
+AffordanceModelOld/.idea/
 
-
+HoiOriClassifier/.idea/
+HoiOriClassifier/data/models
