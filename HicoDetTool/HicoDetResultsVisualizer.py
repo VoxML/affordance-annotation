@@ -163,8 +163,9 @@ class App(QWidget):
             pixmap = QPixmap(tgpath)
             pixmap = pixmap.scaled(self.aff_label.size(), Qt.KeepAspectRatio)
             self.aff_label.setPixmap(pixmap)
-        return
+        #return
         pred_hoi = self.predictor.process_image(img_file)
+        print("Pred Results", pred_hoi)
         tgpath = self.prepare_pred_img(pred_hoi, filename)
         pixmap = QPixmap(tgpath)
         pixmap = pixmap.scaled(self.pred_label.size(), Qt.KeepAspectRatio)
