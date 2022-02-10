@@ -73,10 +73,15 @@ class ImageProcessor:
         result_dict["pairing_scores"] = output["scores"].detach().cpu().numpy().tolist()
         result_dict["pairing_label"] = output["labels"].detach().cpu().numpy().tolist()
 
-        inx = np.array([i for i in range(len(output["objects"])) if i % 2 == 0])
-        oboxes_label = output["objects"].detach().cpu().numpy()[inx].tolist()
         # Without that the obj label refers to the pairings which can be confusing.
-        result_dict["boxes_label"] = [1] * len(set(result_dict["pairing"][0])) + oboxes_label
+        # Not a nice solution, but works for now .....
+        #inx = np.array([i for i in range(len(output["objects"])) if i % 2 == 0])
+        oboxes_label = output["objects"].detach().cpu().numpy().tolist()
+        obj_count = len(output["bscores"])
+        obj_label = [1 for _ in range(obj_count)]
+        for obj_idx, obj_lab in zip(result_dict["pairing"][1], oboxes_label):
+            obj_label[obj_idx] = obj_lab
+        result_dict["boxes_label"] = obj_label
 
         box_label_names = [self.obj_id_to_label[str(x)] for x in result_dict["boxes_label"]]
         result_dict["boxes_label_names"] = box_label_names

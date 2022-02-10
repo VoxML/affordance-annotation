@@ -1,6 +1,11 @@
+import random
 import numpy as np
 import torchvision.transforms as transforms
 
+
+def get_rng_colors(count):
+    colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(count)]
+    return colors
 
 def resize_pad(im, dim):
     w, h = im.size
@@ -11,6 +16,11 @@ def resize_pad(im, dim):
     bottom = int(np.floor((dim - im.size[1]) / 2))
     im = transforms.functional.pad(im, (left, top, right, bottom))
     return im
+
+
+colors = ["#000000", "#FF3300", "#4ade80", "#facc15", "#60a5fa", "#fb923c", "#c084fc", "#22d3ee", "#a3e635", "#663300",
+          "#00FFFF", "#3300FF", "#66CC99", "#FFFF33", "#CC6600", "#999933", "#006666", "#CC00FF", "#FF99CC", "#f87171",
+          "#999999"] * 50
 
 
 id2label = {

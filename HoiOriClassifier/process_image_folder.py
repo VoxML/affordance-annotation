@@ -4,7 +4,6 @@ import json
 from processor import ImageProcessor
 
 
-
 def run(args):
     print("Init Models")
     processor = ImageProcessor(args)
