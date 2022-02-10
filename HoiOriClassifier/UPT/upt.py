@@ -284,7 +284,7 @@ def build_detector(box_score_thresh):
         detr, PostProcess(), interaction_head,
         human_idx=1, num_classes=2,
         box_score_thresh=box_score_thresh,
-        min_instances=3,
+        min_instances=1,
         max_instances=15,
     )
 
