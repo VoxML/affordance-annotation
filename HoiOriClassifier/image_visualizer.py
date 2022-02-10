@@ -6,9 +6,9 @@ import json
 
 from processor import ImageProcessor
 from utils import colors
-from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QFileDialog, QWidget, QDesktopWidget, QTextEdit
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QFileDialog, QWidget, QDesktopWidget, QTextBrowser
 from PyQt5.QtGui import QPixmap, QPainter, QColor, QPen
-from PyQt5.QtCore import Qt, QRect
+from PyQt5.QtCore import Qt, QRect, QLine
 
 
 class App(QWidget):
@@ -31,7 +31,7 @@ class App(QWidget):
 
         self.center_widget()
 
-        self.max_img_width = 600
+        self.max_img_width = 800
         self.max_img_hight = self.height - 200
 
         self.hicodet_label = QLabel(self)
@@ -39,16 +39,24 @@ class App(QWidget):
         self.hicodet_label.setFixedSize(self.max_img_width, self.max_img_hight)
         self.hicodet_label.setAlignment(Qt.AlignCenter)
 
-        #self.obj_area = QScrollArea(self)
+
+        self.results_textbox = QTextBrowser(self)
+        self.results_textbox.move(10, self.max_img_hight + 20)
+        self.results_textbox.resize(self.width - 20, self.height - (self.max_img_hight + 20 + 10))
+
+        self.obj_textbox = QTextBrowser(self)
+        self.obj_textbox.move(900, 10)
+        self.obj_textbox.resize(self.width - 910, 490)
+
+        self.hoi_textbox = QTextBrowser(self)
+        self.hoi_textbox.move(900, 510)
+        self.hoi_textbox.resize(self.width - 910, 490)
+        self.hoi_textbox.setAcceptRichText(True)
 
         self.open_button = QPushButton(self)
         self.open_button.setText("Open Image")
         self.open_button.clicked.connect(self.open_file_name_dialog)
         self.open_button.move(0, 0)
-
-        self.textbox = QTextEdit(self)
-        self.textbox.move(10, self.max_img_hight + 20)
-        self.textbox.resize(self.width - 20, self.height - (self.max_img_hight + 20 + 10))
 
         self.show()
 
@@ -66,8 +74,18 @@ class App(QWidget):
 
         result_text = ""
         for key in sorted(results.keys()):
-            result_text += key + ": " + str(results[key]) + "\n"
-        self.textbox.setText(result_text)
+            # result_text += key + ": " + str(results[key]) + "\n"
+            result_text += f"{key} : {results[key]}\n"
+        self.results_textbox.setText(result_text)
+
+        obj_text = ""
+        for bbox_id, (bbox, bbox_label, bbox_label_name, bbox_score, bbox_ori) in \
+                enumerate(zip(results["boxes"], results["boxes_label"], results["boxes_label_names"], results["boxes_scores"], results["boxes_orientation"])):
+            obj_text += f"{bbox_id}_{bbox_label_name}: {bbox_score}\n" \
+                        f"\tup: {bbox_ori['up']}\n" \
+                        f"\tfront: {bbox_ori['front']}\n" \
+                        f"\tleft: {bbox_ori['left']}\n\n"
+        self.obj_textbox.setText(obj_text)
 
         painter = QPainter(pixmap)
 
@@ -79,22 +97,39 @@ class App(QWidget):
                          int(bbox[2]*scale_factor) - int(bbox[0]*scale_factor),
                          int(bbox[3]*scale_factor) - int(bbox[1]*scale_factor))
             painter.drawRect(rect)
-            painter.drawText(rect, Qt.AlignLeft, bbox_label_name + "_" + str(bbox_id))
+            painter.drawText(rect, Qt.AlignLeft, str(bbox_id) + "_" + bbox_label_name)
 
-        for hbox_id, obox_id, pair_label, label_score in zip(results["pairing"][0], results["pairing"][1], results["pairing_label"], results["pairing_scores"]):
+        hoi_text = ""
+        for hbox_id, obox_id, pair_label, label_score in \
+                zip(results["pairing"][0], results["pairing"][1], results["pairing_label"], results["pairing_scores"]):
+            label_score_str = str(label_score) if label_score < self.config.hoi_score_thresh else "===" + str(label_score) + "==="
+            if pair_label == 0:
+                hoi_text += f"{hbox_id}_{results['boxes_label_names'][hbox_id]} - {obox_id}_{results['boxes_label_names'][obox_id]}\n" \
+                            f"\tGibsonian: {label_score_str}\n"
+            elif pair_label == 1:
+                hoi_text += f"\tTelic: {label_score_str}\n\n"
+            else:
+                hoi_text += "====================\n"
+        self.hoi_textbox.setText(hoi_text)
+
+        for hbox_id, obox_id, pair_label, label_score in \
+                zip(results["pairing"][0], results["pairing"][1], results["pairing_label"], results["pairing_scores"]):
             hbox = results["boxes"][hbox_id]
             obox = results["boxes"][obox_id]
             if label_score > 0.2:
                 h_box_center = (hbox[0] + (hbox[2] - hbox[0]) / 2, hbox[1] + (hbox[3] - hbox[1]) / 2)
                 o_box_center = (obox[0] + (obox[2] - obox[0]) / 2, obox[1] + (obox[3] - obox[1]) / 2)
                 if pair_label == 0:
-                    painter.setPen(QPen(Qt.yellow, 2, Qt.SolidLine))
-                elif pair_label == 1:
                     painter.setPen(QPen(Qt.blue, 2, Qt.SolidLine))
-                painter.drawLine(int(h_box_center[0] * scale_factor),
-                                 int(h_box_center[1] * scale_factor),
-                                 int(o_box_center[0] * scale_factor),
-                                 int(o_box_center[1] * scale_factor))
+                elif pair_label == 1:
+                    painter.setPen(QPen(Qt.red, 2, Qt.SolidLine))
+                line = QLine(int(h_box_center[0] * scale_factor),
+                             int(h_box_center[1] * scale_factor),
+                             int(o_box_center[0] * scale_factor),
+                             int(o_box_center[1] * scale_factor))
+                line.center()
+                painter.drawLine(line)
+                painter.drawText(line.center().x(), line.center().y()-10, str(hbox_id) + "_" + str(obox_id))
 
         painter.end()
         self.hicodet_label.setPixmap(pixmap)
