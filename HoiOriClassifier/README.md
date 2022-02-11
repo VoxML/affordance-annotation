@@ -19,7 +19,7 @@ This project is heavily based on the following projects:
   * PoseContrast_ObjectNet3D_FewShot from https://github.com/YoungXIAO13/PoseContrast (--pose_model)
   
 
-### Predict Folder
+## Predict Folder
 * python process_image_folder.py --input_folder "data/test_images" --output_file "results.json"
   * Predicts the results for every image in "test_images" and writes the results in "results.json"
   
@@ -54,7 +54,7 @@ human - tie: 0.12 Gibsonian and 0.09 Telic
 '''
 ```
 
-### Image Visualizer
+## Image Visualizer
 * python process_image_folder.py
   * Starts an App for visualizing all results for selected images.
   
