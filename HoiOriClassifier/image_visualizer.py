@@ -1,8 +1,7 @@
 import sys
-import os
 import argparse
 import traceback
-import json
+
 
 from processor import ImageProcessor
 from utils import colors
@@ -19,40 +18,45 @@ class App(QWidget):
         self.top = 100
         self.width = 1900
         self.height = 1200
-        self.config = config
-        self.image_processor = ImageProcessor(config)
-
-        self.init_ui()
-
-    def init_ui(self):
-        print("Init UI")
-        self.setWindowTitle(self.title)
-        self.setFixedSize(self.width, self.height)
-
-        self.center_widget()
 
         self.max_img_width = 800
         self.max_img_hight = self.height - 200
 
+        self.config = config
+        self.image_processor = ImageProcessor(config)
+
+        self.initUI()
+
+    def initUI(self):
+        print("Init UI")
+        # Todo: make every size dependent on width and height
+        self.setWindowTitle(self.title)
+        self.setFixedSize(self.width, self.height)
+        self.center_widget()
+
+        # Image Window
         self.hicodet_label = QLabel(self)
         self.hicodet_label.move(10, 10)
         self.hicodet_label.setFixedSize(self.max_img_width, self.max_img_hight)
         self.hicodet_label.setAlignment(Qt.AlignCenter)
 
-
+        # Bottom Box for JSON Output
         self.results_textbox = QTextBrowser(self)
         self.results_textbox.move(10, self.max_img_hight + 20)
         self.results_textbox.resize(self.width - 20, self.height - (self.max_img_hight + 20 + 10))
 
+        # Top Right Box for Obj Results
         self.obj_textbox = QTextBrowser(self)
         self.obj_textbox.move(900, 10)
         self.obj_textbox.resize(self.width - 910, 490)
 
+        # Bottom Right Box for HOI Results
         self.hoi_textbox = QTextBrowser(self)
         self.hoi_textbox.move(900, 510)
         self.hoi_textbox.resize(self.width - 910, 490)
-        self.hoi_textbox.setAcceptRichText(True)
+        #self.hoi_textbox.setAcceptRichText(True)
 
+        # Top Left Buttom
         self.open_button = QPushButton(self)
         self.open_button.setText("Open Image")
         self.open_button.clicked.connect(self.open_file_name_dialog)
@@ -60,24 +64,16 @@ class App(QWidget):
 
         self.show()
 
-        self.process_image("D:/Corpora/HICO-DET/hico_20160224_det/images/test2015/HICO_test2015_00000005.jpg")
+        #self.process_image("D:/Corpora/HICO-DET/hico_20160224_det/images/test2015/HICO_test2015_00000005.jpg")
 
-    def process_image(self, img_file):
-        pixmap = QPixmap(img_file)
-        img_size = pixmap.size()
-        scale_factor = min(self.max_img_hight / img_size.height(), self.max_img_width / img_size.width())
-
-        pixmap = pixmap.scaled(self.hicodet_label.size(), Qt.KeepAspectRatio)
-
-        results = self.image_processor.process_image(img_file)
-        #results = {'boxes_scores': [0.9997149109840393, 0.9549877047538757, 0.9221760034561157], 'pairing': [[0, 0, 0, 0], [1, 1, 2, 2]], 'pairing_scores': [0.06059708446264267, 0.5121495723724365, 0.08064398914575577, 0.12172546982765198], 'pairing_label': [0, 1, 0, 1], 'boxes_label': [1, 27, 47], 'boxes_label_names': ['person', 'backpack', 'cup'], 'boxes': [[4.344019889831543, 61.697862922138846, 413.08278808593747, 633.2521546669794], [331.02857666015626, 169.29782774390245, 468.6744873046875, 401.90790630863046], [8.274765014648438, 383.0560726430582, 73.61431274414062, 444.2026999296436]], 'boxes_orientation': [{'front': [0.913848340511322, -0.09131860733032227, 0.39565420150756836], 'up': [0.08353635668754578, 0.9958215355873108, 0.0368945337831974], 'left': [0.3973701000213623, 0.000664496619720012, -0.9176582098007202]}, {'front': [0.9801536202430725, -0.11696866154670715, 0.16005392372608185], 'up': [0.11525282263755798, 0.9931349158287048, 0.019994506612420082], 'left': [0.1612938791513443, 0.0011510220356285572, -0.9869058132171631]}, {'front': [0.060182277113199234, -0.3483457863330841, 0.9354321956634521], 'up': [0.01510847732424736, 0.9373413324356079, 0.3480847179889679], 'left': [0.9980731010437012, 0.006815575994551182, -0.06167431175708771]}]}
-
+    def update_result_textbox(self, results):
         result_text = ""
         for key in sorted(results.keys()):
             # result_text += key + ": " + str(results[key]) + "\n"
             result_text += f"{key} : {results[key]}\n"
         self.results_textbox.setText(result_text)
 
+    def update_obj_textbox(self, results):
         obj_text = ""
         for bbox_id, (bbox, bbox_label, bbox_label_name, bbox_score, bbox_ori) in \
                 enumerate(zip(results["boxes"], results["boxes_label"], results["boxes_label_names"], results["boxes_scores"], results["boxes_orientation"])):
@@ -87,18 +83,7 @@ class App(QWidget):
                         f"\tleft: {bbox_ori['left']}\n\n"
         self.obj_textbox.setText(obj_text)
 
-        painter = QPainter(pixmap)
-
-        for bbox_id, (bbox, bbox_label, bbox_label_name) in \
-                enumerate(zip(results["boxes"], results["boxes_label"], results["boxes_label_names"])):
-
-            painter.setPen(QPen(QColor(colors[bbox_label]), 2, Qt.SolidLine))
-            rect = QRect(int(bbox[0]*scale_factor), int(bbox[1]*scale_factor),
-                         int(bbox[2]*scale_factor) - int(bbox[0]*scale_factor),
-                         int(bbox[3]*scale_factor) - int(bbox[1]*scale_factor))
-            painter.drawRect(rect)
-            painter.drawText(rect, Qt.AlignLeft, str(bbox_id) + "_" + bbox_label_name)
-
+    def update_hoi_textbox(self, results):
         hoi_text = ""
         for hbox_id, obox_id, pair_label, label_score in \
                 zip(results["pairing"][0], results["pairing"][1], results["pairing_label"], results["pairing_scores"]):
@@ -112,11 +97,45 @@ class App(QWidget):
                 hoi_text += "====================\n"
         self.hoi_textbox.setText(hoi_text)
 
+    def process_image(self, img_file):
+        """
+        Args:
+            img_file: Path to Image
+        Returns: None
+        """
+        pixmap = QPixmap(img_file)
+        img_size = pixmap.size()
+
+        # For rescaling the results between the actual image and the displayed one.
+        scale_factor = min(self.max_img_hight / img_size.height(), self.max_img_width / img_size.width())
+        pixmap = pixmap.scaled(self.hicodet_label.size(), Qt.KeepAspectRatio)
+
+        # Process Image
+        results = self.image_processor.process_image(img_file)
+
+        # Update Textboxes
+        self.update_result_textbox(results)
+        self.update_obj_textbox(results)
+        self.update_hoi_textbox(results)
+
+        # Add BBoxes to Image
+        painter = QPainter(pixmap)
+        for bbox_id, (bbox, bbox_label, bbox_label_name) in \
+                enumerate(zip(results["boxes"], results["boxes_label"], results["boxes_label_names"])):
+
+            painter.setPen(QPen(QColor(colors[bbox_label]), 2, Qt.SolidLine))
+            rect = QRect(int(bbox[0]*scale_factor), int(bbox[1]*scale_factor),
+                         int(bbox[2]*scale_factor) - int(bbox[0]*scale_factor),
+                         int(bbox[3]*scale_factor) - int(bbox[1]*scale_factor))
+            painter.drawRect(rect)
+            painter.drawText(rect, Qt.AlignLeft, str(bbox_id) + "_" + bbox_label_name)
+
+        # Add HOI Links in Image
         for hbox_id, obox_id, pair_label, label_score in \
                 zip(results["pairing"][0], results["pairing"][1], results["pairing_label"], results["pairing_scores"]):
             hbox = results["boxes"][hbox_id]
             obox = results["boxes"][obox_id]
-            if label_score > 0.2:
+            if label_score > self.config.hoi_score_thresh:
                 h_box_center = (hbox[0] + (hbox[2] - hbox[0]) / 2, hbox[1] + (hbox[3] - hbox[1]) / 2)
                 o_box_center = (obox[0] + (obox[2] - obox[0]) / 2, obox[1] + (obox[3] - obox[1]) / 2)
                 if pair_label == 0:
@@ -127,20 +146,27 @@ class App(QWidget):
                              int(h_box_center[1] * scale_factor),
                              int(o_box_center[0] * scale_factor),
                              int(o_box_center[1] * scale_factor))
-                line.center()
                 painter.drawLine(line)
                 painter.drawText(line.center().x(), line.center().y()-10, str(hbox_id) + "_" + str(obox_id))
-
         painter.end()
+
+        # Display Image
         self.hicodet_label.setPixmap(pixmap)
 
 
     def open_file_name_dialog(self):
-        fileName, test = QFileDialog.getOpenFileName(self, "Open Image", "D:/Corpora/HICO-DET/hico_20160224_det/images/test2015", "Image Files (*.jpg; *.png)")
+        """
+        Dialoge for opening and processing image
+        Returns: None
+        """
+        fileName, test = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.jpg; *.png)")
         if fileName:
             self.process_image(fileName)
 
     def center_widget(self):
+        """
+        Center App
+        """
         qt_rectangle = self.frameGeometry()
         center_point = QDesktopWidget().availableGeometry().center()
         qt_rectangle.moveCenter(center_point)
@@ -164,6 +190,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--hoi_model', default="data/models/robust-sweep-8_ckpt_41940_20.pt", type=str)
     parser.add_argument('--pose_model', default="data/models/pose-model.pth", type=str)
+
     parsed_args = parser.parse_args()
 
 

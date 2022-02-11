@@ -20,7 +20,7 @@ if __name__ == "__main__":
     parser.add_argument('--output_file', default="results.json", type=str)
     parser.add_argument('--device', default=0, type=int)
 
-    parser.add_argument('--box_score_thresh', default=0.9, type=int)
+    parser.add_argument('--box_score_thresh', default=0.5, type=int)
 
     parser.add_argument('--hoi_model', default="data/models/robust-sweep-8_ckpt_41940_20.pt", type=str)
     parser.add_argument('--pose_model', default="data/models/pose-model.pth", type=str)
