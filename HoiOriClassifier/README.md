@@ -14,7 +14,6 @@ This project is heavily based on the following projects:
 * install pytorch: https://pytorch.org/
 * pip install -r requirements.txt
 * (Maybe 1-2 libraries are still missing. In this case please add them or let me know.)
-
 * To use this tool, download the following models:
   * UPT Model from https://hessenbox-a10.rz.uni-frankfurt.de/dl/fi2jNX5TxJB1f5qbiZzRQnVU/robust-sweep-8_ckpt_41940_20.pt  (--hoi_model)
   * PoseContrast_ObjectNet3D_FewShot from https://github.com/YoungXIAO13/PoseContrast (--pose_model)
