@@ -112,9 +112,10 @@ class App(QWidget):
         # Process Image
         results = self.image_processor.process_image(img_file)
         if len(results) == 0:
+            self.hicodet_label.setPixmap(pixmap)
             self.results_textbox.setText("No objects could be detected!")
             return
-        
+
         # Update Textboxes
         self.update_result_textbox(results)
         self.update_obj_textbox(results)
