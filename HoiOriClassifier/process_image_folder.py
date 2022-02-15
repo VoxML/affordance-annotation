@@ -16,8 +16,10 @@ def run(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_folder', default="data/test_images", type=str)
-    parser.add_argument('--output_file', default="results.json", type=str)
+    #parser.add_argument('--input_folder', default="data/test_images", type=str)
+    parser.add_argument('--input_folder', default="D:/Corpora/HICO-DET/hico_20160224_det/images/test2015", type=str)
+
+    parser.add_argument('--output_file', default="results_hico_test_2015.json", type=str)
     parser.add_argument('--device', default=0, type=int)
 
     parser.add_argument('--box_score_thresh', default=0.5, type=int)

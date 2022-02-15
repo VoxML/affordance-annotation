@@ -52,8 +52,8 @@ class ImageProcessor:
         # Map ObjetID to TextLabel
         self.obj_id_to_label = utils.id2label
 
-
     def process_image(self, img_path: str):
+        #print(img_path)
         result_dict = {}
 
         # Load and Transform Image
@@ -64,7 +64,13 @@ class ImageProcessor:
 
         # Predict Human, Objects and Telic/gibsonain Interactions
         with torch.no_grad():
-            output = self.upt(img)[0]
+            output = self.upt(img)
+
+        # Check if any objects were detected
+        if len(output) > 0:
+            output = output[0]
+        else:
+            return result_dict  # Empty
 
         # Write Results to Dictionary
         result_dict["boxes_scores"] = output["bscores"].detach().cpu().numpy().tolist()

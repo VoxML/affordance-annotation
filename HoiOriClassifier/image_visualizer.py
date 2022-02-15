@@ -69,7 +69,6 @@ class App(QWidget):
     def update_result_textbox(self, results):
         result_text = ""
         for key in sorted(results.keys()):
-            # result_text += key + ": " + str(results[key]) + "\n"
             result_text += f"{key} : {results[key]}\n"
         self.results_textbox.setText(result_text)
 
@@ -153,15 +152,14 @@ class App(QWidget):
         # Display Image
         self.hicodet_label.setPixmap(pixmap)
 
-
     def open_file_name_dialog(self):
         """
         Dialoge for opening and processing image
         Returns: None
         """
-        fileName, test = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.jpg; *.png)")
-        if fileName:
-            self.process_image(fileName)
+        file_name, test = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.jpg; *.png)")
+        if file_name:
+            self.process_image(file_name)
 
     def center_widget(self):
         """
@@ -193,9 +191,7 @@ if __name__ == "__main__":
 
     parsed_args = parser.parse_args()
 
-
     app = QApplication(sys.argv)
-
     ex = App(parsed_args)
 
     sys.excepthook = excepthook

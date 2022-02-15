@@ -11,7 +11,7 @@ This project is heavily based on the following projects:
 * https://docs.conda.io/en/latest/miniconda.html
 * conda create -n "habitat" python=3.8
 * conda activate habitat
-* install pytorch: https://pytorch.org/
+* install pytorch: https://pytorch.org/ (recommended version: 1.9.0)
 * pip install -r requirements.txt
 * (Maybe 1-2 libraries are still missing. In this case please add them or let me know.)
 * To use this tool, download the following models:
