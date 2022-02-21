@@ -114,6 +114,8 @@ class App(QWidget):
         if len(results) == 0:
             self.hicodet_label.setPixmap(pixmap)
             self.results_textbox.setText("No objects could be detected!")
+            self.obj_textbox.setText("")
+            self.hoi_textbox.setText("")
             return
 
         # Update Textboxes

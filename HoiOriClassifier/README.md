@@ -55,7 +55,7 @@ human - tie: 0.12 Gibsonian and 0.09 Telic
 ```
 
 ## Image Visualizer
-* python process_image_folder.py
+* python image_visualizer.py
   * Starts an App for visualizing all results for selected images.
   
 #### Parameters
