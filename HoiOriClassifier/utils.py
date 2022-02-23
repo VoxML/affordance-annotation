@@ -7,6 +7,30 @@ def get_rng_colors(count):
     colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(count)]
     return colors
 
+
+def ori_dict_to_vec(ori_dict):
+    vector = np.zeros(3)
+    keys = ori_dict.keys()
+    if "n/a" in keys or len(keys) == 0:
+        return vector
+    elif "+x" in keys:
+        vector[0] = 1
+    elif "-x" in keys:
+        vector[0] = -1
+    elif "+y" in keys:
+        vector[2] = 1
+    elif "-y" in keys:
+        vector[2] = -1
+    elif "+z" in keys:
+        vector[1] = 1
+    elif "-z" in keys:
+        vector[1] = -1
+    else:
+        print(ori_dict)
+        print("!!!!!!!!!!!!!!!!!")
+    return vector
+
+
 def resize_pad(im, dim):
     w, h = im.size
     im = transforms.functional.resize(im, int(dim * min(w, h) / max(w, h)))
@@ -16,6 +40,38 @@ def resize_pad(im, dim):
     bottom = int(np.floor((dim - im.size[1]) / 2))
     im = transforms.functional.pad(im, (left, top, right, bottom))
     return im
+
+
+def get_iou(bb1, bb2):
+    assert bb1['x1'] < bb1['x2']
+    assert bb1['y1'] < bb1['y2']
+    assert bb2['x1'] < bb2['x2']
+    assert bb2['y1'] < bb2['y2']
+
+    # determine the coordinates of the intersection rectangle
+    x_left = max(bb1['x1'], bb2['x1'])
+    y_top = max(bb1['y1'], bb2['y1'])
+    x_right = min(bb1['x2'], bb2['x2'])
+    y_bottom = min(bb1['y2'], bb2['y2'])
+
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+
+    # The intersection of two axis-aligned bounding boxes is always an
+    # axis-aligned bounding box
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+
+    # compute the area of both AABBs
+    bb1_area = (bb1['x2'] - bb1['x1']) * (bb1['y2'] - bb1['y1'])
+    bb2_area = (bb2['x2'] - bb2['x1']) * (bb2['y2'] - bb2['y1'])
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
+    assert iou >= 0.0
+    assert iou <= 1.0
+    return iou
 
 
 colors = ["#000000", "#FF3300", "#4ade80", "#facc15", "#60a5fa", "#fb923c", "#c084fc", "#22d3ee", "#a3e635", "#663300",
