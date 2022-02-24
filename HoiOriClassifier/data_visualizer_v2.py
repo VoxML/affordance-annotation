@@ -5,15 +5,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-import utils
-
 plt.rcParams["figure.figsize"] = (20, 5)
 
 from tqdm import tqdm
-from utils import get_iou, ori_dict_to_vec
+from utils import get_iou, ori_dict_to_vec, merge_bboxes, id2label
 
 
-def generate_matplot_graph(dfall, labels=None, title="multiple stacked bar plot",  H="/", **kwargs):
+def generate_matplot_graph(dfall, labels=None, title="multiple stacked bar plot", H="/", **kwargs):
     """Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot.
 labels is a list of the names of the dataframe, used for the legend
 title is a string for the title of the plot
@@ -24,7 +22,7 @@ H is the hatch used for identification of the different dataframe"""
     n_ind = len(dfall[0].index)
     axe = plt.subplot(111)
 
-    for df in dfall: # for each data frame
+    for df in dfall:  # for each data frame
         axe = df.plot(kind="bar",
                       linewidth=0,
                       stacked=True,
@@ -33,12 +31,12 @@ H is the hatch used for identification of the different dataframe"""
                       grid=False,
                       **kwargs)  # make bar plots
 
-    h,l = axe.get_legend_handles_labels() # get the handles we want to modify
-    for i in range(0, n_df * n_col, n_col): # len(h) = n_col * n_df
-        for j, pa in enumerate(h[i:i+n_col]):
-            for rect in pa.patches: # for each index
+    h, l = axe.get_legend_handles_labels()  # get the handles we want to modify
+    for i in range(0, n_df * n_col, n_col):  # len(h) = n_col * n_df
+        for j, pa in enumerate(h[i:i + n_col]):
+            for rect in pa.patches:  # for each index
                 rect.set_x(rect.get_x() + 1 / float(n_df + 1) * i / float(n_col))
-                rect.set_hatch(H * int(i / n_col)) #edited part
+                rect.set_hatch(H * int(i / n_col))  # edited part
                 rect.set_width(1 / float(n_df + 1))
 
     axe.set_xticks((np.arange(0, 2 * n_ind, 2) + 1 / float(n_df + 1)) / 2.)
@@ -46,7 +44,7 @@ H is the hatch used for identification of the different dataframe"""
     axe.set_title(title)
 
     # Add invisible data to add another legend
-    n=[]
+    n = []
     for i in range(n_df):
         n.append(axe.bar(0, 0, color="gray", hatch=H * i))
 
@@ -57,7 +55,27 @@ H is the hatch used for identification of the different dataframe"""
     return axe
 
 
-def generate_detr_vs_ori_df(config):
+def generate_matplot_graph_with_line(df, box_values, line_values):
+    # fig = plt.figure()
+    ax = df[box_values].plot(kind='bar', use_index=True)
+    ax2 = ax.twinx()
+    lines = ax2.plot(df[line_values].values, linestyle='-', marker='o', linewidth=2.0)
+
+    # https://matplotlib.org/stable/_images/dflt_style_changes-1.png
+    x = np.arange(0, len(df.index), 1)
+
+    color = ["#1f77b4", '#ff7f0e'] * 100
+    for line_idx, line_value in enumerate(line_values):
+        y_mean = [df[line_value].mean()] * len(df.index)
+        ax2.plot(x, y_mean, label=f'{line_value} mean', linestyle='--', color=color[line_idx])
+
+    # y_mean = [df['telic_score'].mean()] * len(df.index)
+    # ax2.plot(x, y_mean, label='Telic Mean', linestyle='--', color='#ff7f0e')
+
+    ax2.legend(lines, line_values, loc=1)
+
+
+def generate_detr_vs_ori_df(config, threshhold=0.8):
     anno_path = os.path.join(config.hicodet_path, "via234_1200 items_train verified.json")
     filter_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
     with open(anno_path) as json_file:
@@ -79,10 +97,9 @@ def generate_detr_vs_ori_df(config):
 
             front_vec = ori_dict_to_vec(region["region_attributes"]["front"])
             up_vec = ori_dict_to_vec(region["region_attributes"]["up"])
-            #selected_orientation = f"{front_vec}_{up_vec}"
-            selected_orientation = f"{front_vec}"
-            #selected_orientation = f"{up_vec}"
-
+            selected_orientation = f"{front_vec}_{up_vec}"
+            # selected_orientation = f"{front_vec}"
+            # selected_orientation = f"{up_vec}"
 
             if "category" not in region["region_attributes"]:
                 continue
@@ -104,19 +121,20 @@ def generate_detr_vs_ori_df(config):
                 for df in error_dfs.values():
                     df.loc[:, name] = 0
 
-
-
             found = False
             found_other = False
-            for pred_bbox, pred_label, pred_bbox_score in zip(preds["boxes"], preds["boxes_label_names"], preds["boxes_scores"]):
+            for pred_bbox, pred_label, pred_bbox_score in zip(preds["boxes"], preds["boxes_label_names"],
+                                                              preds["boxes_scores"]):
+                if pred_bbox_score < threshhold:
+                    continue
+
                 pred_label = pred_label.replace(" ", "_")
 
                 iou = get_iou({"x1": pred_bbox[0], "x2": pred_bbox[2], "y1": pred_bbox[1], "y2": pred_bbox[3]},
-                                {"x1": bbox[0], "x2": bbox[2], "y1": bbox[1], "y2": bbox[3]})
+                              {"x1": bbox[0], "x2": bbox[2], "y1": bbox[1], "y2": bbox[3]})
 
                 if iou > 0.5 and pred_label == name:
                     found = True
-                    #df = df.append({"obj": name, "front": str(front_vec), "up": str(up_vec), "det_type": "correct", "value": 1}, ignore_index=True)
                     error_dfs["correct"].loc[selected_orientation, pred_label] += 1
                     break
                 elif iou > 0.5 and pred_label != name:
@@ -124,14 +142,8 @@ def generate_detr_vs_ori_df(config):
 
             if not found and not found_other:
                 error_dfs["wrong_det"].loc[selected_orientation, name] += 1
-                #df = df.append({"obj": name, "front": str(front_vec), "up": str(up_vec), "det_type": "wrong_det", "value": 1}, ignore_index=True)
             elif not found:
                 error_dfs["not_det"].loc[selected_orientation, name] += 1
-                #df = df.append({"obj": name, "front": str(front_vec), "up": str(up_vec), "det_type": "not_det", "value": 1}, ignore_index=True)
-                #df.loc[f"{front_vec}_{up_vec}_ndet", name] += 1
-
-                #df.loc[f"{front_vec}_{up_vec}_wdet", name] += 1
-    #df["orientation"] = df["up"] + df["front"]
 
     for key, df in error_dfs.items():
         df = df.transpose()
@@ -139,8 +151,8 @@ def generate_detr_vs_ori_df(config):
         error_dfs[key] = df
 
     return error_dfs
-    #df = df.groupby(["obj", "front", "det_type"])["value"].sum()
-    #df = df.transpose()
+    # df = df.groupby(["obj", "front", "det_type"])["value"].sum()
+    # df = df.transpose()
 
 
 def generate_APm_DETR(config):
@@ -211,15 +223,32 @@ def generate_APm_DETR(config):
         , 0.01728512, 0.21769106, 0.58926262, 0.00, 0.07009167, 0.37464115
         , 0.1906608, 0.49947662]
 
-    train_anno_interactions = [0, 0, 679, 167, 2138, 2391, 134, 931, 1265, 1641, 219, 801, 736, 1839, 270, 648, 106, 522, 1956, 4965, 20, 48, 1, 41, 0, 0, 25, 1, 0, 42, 2067, 13, 476, 257, 225, 4, 644, 78, 826, 1696, 324, 679, 258, 288, 1211, 41, 83, 82, 74, 8, 294, 158, 0, 0, 302, 1044, 2159, 38, 0, 0, 0, 0, 206, 6, 32, 858, 360, 48, 797, 93, 481, 1359, 281, 936, 974, 213, 598, 952, 245, 741, 38, 199, 1197, 1743, 408, 237, 235, 86, 420, 221, 0, 0, 327, 151, 243, 190, 180, 0, 162, 633, 240, 32, 66, 34, 450, 325, 193, 82, 112, 132, 42, 5, 27, 47, 237, 64, 183, 254, 173, 253, 238, 177, 464, 436, 1386, 0, 1123, 0, 23, 0, 465, 2, 0, 0, 1791, 2324, 0, 0, 0, 0, 60, 25, 0, 0, 0, 237, 74, 729, 27, 48, 197, 0, 57, 221, 330, 496, 0, 11, 5, 104, 2, 3, 6, 14, 25, 24, 0, 0, 265, 811, 23, 80, 8, 17, 122, 195, 305, 0, 9, 51, 165, 232]
-    test_anno_interactions = [0, 0, 189, 22, 553, 589, 35, 260, 355, 484, 42, 239, 215, 538, 67, 132, 46, 182, 354, 1176, 10, 18, 6, 16, 0, 0, 7, 3, 0, 11, 416, 10, 151, 56, 74, 5, 152, 58, 216, 517, 80, 89, 78, 119, 266, 11, 11, 27, 11, 5, 68, 57, 0, 0, 100, 250, 464, 26, 0, 0, 0, 0, 56, 8, 8, 195, 114, 17, 207, 37, 149, 380, 65, 231, 256, 81, 206, 285, 44, 195, 16, 46, 308, 488, 133, 74, 49, 35, 74, 93, 0, 0, 71, 66, 54, 66, 57, 0, 45, 183, 56, 22, 21, 6, 94, 116, 65, 30, 31, 43, 31, 25, 27, 20, 44, 86, 39, 151, 50, 108, 54, 55, 122, 112, 321, 0, 272, 0, 15, 0, 97, 6, 0, 0, 318, 639, 0, 0, 0, 0, 23, 23, 0, 0, 0, 102, 21, 170, 5, 14, 56, 0, 11, 52, 65, 168, 0, 11, 5, 35, 2, 17, 2, 10, 10, 10, 0, 0, 99, 217, 4, 21, 3, 10, 20, 64, 66, 0, 5, 16, 50, 74]
+    train_anno_interactions = [0, 0, 679, 167, 2138, 2391, 134, 931, 1265, 1641, 219, 801, 736, 1839, 270, 648, 106,
+                               522, 1956, 4965, 20, 48, 1, 41, 0, 0, 25, 1, 0, 42, 2067, 13, 476, 257, 225, 4, 644, 78,
+                               826, 1696, 324, 679, 258, 288, 1211, 41, 83, 82, 74, 8, 294, 158, 0, 0, 302, 1044, 2159,
+                               38, 0, 0, 0, 0, 206, 6, 32, 858, 360, 48, 797, 93, 481, 1359, 281, 936, 974, 213, 598,
+                               952, 245, 741, 38, 199, 1197, 1743, 408, 237, 235, 86, 420, 221, 0, 0, 327, 151, 243,
+                               190, 180, 0, 162, 633, 240, 32, 66, 34, 450, 325, 193, 82, 112, 132, 42, 5, 27, 47, 237,
+                               64, 183, 254, 173, 253, 238, 177, 464, 436, 1386, 0, 1123, 0, 23, 0, 465, 2, 0, 0, 1791,
+                               2324, 0, 0, 0, 0, 60, 25, 0, 0, 0, 237, 74, 729, 27, 48, 197, 0, 57, 221, 330, 496, 0,
+                               11, 5, 104, 2, 3, 6, 14, 25, 24, 0, 0, 265, 811, 23, 80, 8, 17, 122, 195, 305, 0, 9, 51,
+                               165, 232]
+    test_anno_interactions = [0, 0, 189, 22, 553, 589, 35, 260, 355, 484, 42, 239, 215, 538, 67, 132, 46, 182, 354,
+                              1176, 10, 18, 6, 16, 0, 0, 7, 3, 0, 11, 416, 10, 151, 56, 74, 5, 152, 58, 216, 517, 80,
+                              89, 78, 119, 266, 11, 11, 27, 11, 5, 68, 57, 0, 0, 100, 250, 464, 26, 0, 0, 0, 0, 56, 8,
+                              8, 195, 114, 17, 207, 37, 149, 380, 65, 231, 256, 81, 206, 285, 44, 195, 16, 46, 308, 488,
+                              133, 74, 49, 35, 74, 93, 0, 0, 71, 66, 54, 66, 57, 0, 45, 183, 56, 22, 21, 6, 94, 116, 65,
+                              30, 31, 43, 31, 25, 27, 20, 44, 86, 39, 151, 50, 108, 54, 55, 122, 112, 321, 0, 272, 0,
+                              15, 0, 97, 6, 0, 0, 318, 639, 0, 0, 0, 0, 23, 23, 0, 0, 0, 102, 21, 170, 5, 14, 56, 0, 11,
+                              52, 65, 168, 0, 11, 5, 35, 2, 17, 2, 10, 10, 10, 0, 0, 99, 217, 4, 21, 3, 10, 20, 64, 66,
+                              0, 5, 16, 50, 74]
 
     for x in range(0, len(eval_results), 2):
         obj_idx = str(int(x / 2))
-        obj_name = utils.id2label[obj_idx].replace(" ", "_")
+        obj_name = id2label[obj_idx].replace(" ", "_")
         if obj_name in df.index:
             df.loc[obj_name, "gibsonian_score"] = eval_results[x]
-            df.loc[obj_name, "telic_score"] = eval_results[x+1]
+            df.loc[obj_name, "telic_score"] = eval_results[x + 1]
             df.loc[obj_name, "hicodet_gibsonian_train_count"] = train_anno_interactions[x]
             df.loc[obj_name, "hicodet_telic_train_count"] = train_anno_interactions[x + 1]
             df.loc[obj_name, "hicodet_gibsonian_test_count"] = train_anno_interactions[x]
@@ -228,33 +257,133 @@ def generate_APm_DETR(config):
 
     df["tg_diff"] = df["hicodet_gibsonian_train_count"] - df["hicodet_telic_train_count"]
 
-    #df = df.sort_values(["gibsonian_score"], ascending=False)
+    # df = df.sort_values(["gibsonian_score"], ascending=False)
     df = df.sort_values(["tg_diff"], ascending=False)
-    #df = df.sort_values(["hicodet_gibsonian_train_count"], ascending=False)
+    # df = df.sort_values(["hicodet_gibsonian_train_count"], ascending=False)
 
     df["obj"] = df.index
-    print(df)
-
-    fig = plt.figure()
-    #ax = df[['hicodet_obj_train_count', 'hicodet_obj_test_count',
-    #         'hicodet_telic_train_count', 'hicodet_gibsonian_train_count',
-    #         'hicodet_telic_test_count', 'hicodet_gibsonian_test_count']].plot(kind='bar', use_index=True)
-    ax = df[['hicodet_gibsonian_train_count', 'hicodet_telic_train_count', 'hicodet_obj_train_count']].plot(kind='bar', use_index=True)
-    ax2 = ax.twinx()
-    lines = ax2.plot(df[['gibsonian_score', 'telic_score']].values, linestyle='-', marker='o', linewidth=2.0)
+    return df
 
 
-    # https://matplotlib.org/stable/_images/dflt_style_changes-1.png
-    x = np.arange(0, len(df.index), 1)
-    y_mean = [df['gibsonian_score'].mean()] * len(df.index)
-    ax2.plot(x, y_mean, label='Gibsonian Mean', linestyle='--', color='#1f77b4')
+def merge_everything(config):
+    anno_path = os.path.join(config.hicodet_path, "instances_train2015.json")
+    with open(anno_path) as json_file:
+        train_data = json.load(json_file)
 
-    x = np.arange(0, len(df.index), 1)
-    y_mean = [df['telic_score'].mean()] * len(df.index)
-    ax2.plot(x, y_mean, label='Telic Mean', linestyle='--', color='#ff7f0e')
+    anno_path = os.path.join(config.hicodet_path, "instances_test2015.json")
+    with open(anno_path) as json_file:
+        eval_data = json.load(json_file)
 
-    ax2.legend(lines, ['gibsonian_score', 'telic_score'], loc=1)
-    plt.show()
+    anno_path = os.path.join(config.hicodet_path, "via234_1200 items_train verified v2.json")
+    with open(anno_path) as json_file:
+        anno_data = json.load(json_file)
+
+    object_names = train_data["objects"]
+    verb_names = train_data["verbs"]
+    merged_results = {}
+
+    # Merge multiple bboxes for one object
+    for file_name, annotation in zip(train_data["filenames"], train_data["annotation"]):
+        train_data_merged = merge_bboxes(annotation, object_names, verb_names)
+        merged_results[file_name] = train_data_merged
+
+    for file_name, annotation in zip(eval_data["filenames"], eval_data["annotation"]):
+        train_data_merged = merge_bboxes(annotation, object_names, verb_names)
+        merged_results[file_name] = train_data_merged
+    error_count = 0
+    # Add Anju Annotations
+    for _, annotation in tqdm(anno_data["_via_img_metadata"].items()):
+        filename = annotation["filename"]
+
+        hicodet_anno = merged_results[filename]
+
+        human_bboxes_ori = [None for _ in range(len(hicodet_anno["human_bboxes"]))]
+        object_bboxes_ori = [None for _ in range(len(hicodet_anno["object_bboxes"]))]
+
+        remap_obj_id = {}
+        remap_human_id = {}
+        annotated_connections = []
+        annotated_actions = []
+        annotated_affordances = []
+
+        # For every marked object
+        for region_id, region in enumerate(annotation["regions"]):
+            bbox = [region["shape_attributes"]["x"], region["shape_attributes"]["y"],
+                    region["shape_attributes"]["x"] + region["shape_attributes"]["width"],
+                    region["shape_attributes"]["y"] + region["shape_attributes"]["height"]]
+            front_vec = ori_dict_to_vec(region["region_attributes"]["front"])
+            up_vec = ori_dict_to_vec(region["region_attributes"]["up"])
+
+            # Check if Person or Object
+            if "category" not in region["region_attributes"]:
+                continue
+            elif region["region_attributes"]["category"] == "human":
+                found = False
+                for h_bbox_idx, h_bbox in enumerate(hicodet_anno["human_bboxes"]):
+                    iou = get_iou({"x1": bbox[0], "x2": bbox[2], "y1": bbox[1], "y2": bbox[3]},
+                                  {"x1": h_bbox[0], "x2": h_bbox[2], "y1": h_bbox[1], "y2": h_bbox[3]})
+                    if iou > 0.5:
+                        found = True
+                        human_bboxes_ori[h_bbox_idx] = [front_vec, up_vec]
+                        remap_human_id[region_id] = h_bbox_idx
+                        break # Not shure if I sould break ....
+
+                if not found:
+                    # Add new annotated human
+                    hicodet_anno["human_bboxes"].append(bbox)
+                    human_bboxes_ori.append([front_vec, up_vec])
+                    remap_human_id[region_id] = len(hicodet_anno["human_bboxes"]) - 1
+
+
+            elif region["region_attributes"]["category"] == "object":
+                found = False
+                obj_name = region["region_attributes"]["obj name"].replace(" ", "_")
+                for o_bbox_idx, (o_bbox, o_bbox_lab) in enumerate(
+                        zip(hicodet_anno["object_bboxes"], hicodet_anno["object_labels"])):
+                    iou = get_iou({"x1": bbox[0], "x2": bbox[2], "y1": bbox[1], "y2": bbox[3]},
+                                  {"x1": o_bbox[0], "x2": o_bbox[2], "y1": o_bbox[1], "y2": o_bbox[3]})
+                    if iou > 0.5 and obj_name == o_bbox_lab:
+                        found = True
+                        object_bboxes_ori[o_bbox_idx] = [front_vec, up_vec]
+                        remap_obj_id[region_id] = o_bbox_idx
+                if not found:
+                    # Add new annotated object
+                    hicodet_anno["object_bboxes"].append(bbox)
+                    object_bboxes_ori.append([front_vec, up_vec])
+                    hicodet_anno["object_labels"].append(obj_name)
+                    remap_obj_id[region_id] = len(hicodet_anno["object_bboxes"]) - 1
+            else:
+                print("???????????????????") # Not human nore object. should never happen.
+                exit()
+
+        # Now add the coresponding links.
+        for region_id, region in enumerate(annotation["regions"]):
+            if "category" not in region["region_attributes"]:
+                continue
+            elif region["region_attributes"]["category"] == "human":
+                anno_actions = region["region_attributes"]["action"].split(",")
+                anno_affordances = region["region_attributes"]["affordance"].split(",")
+                anno_objs = region["region_attributes"]["obj id"].split(",")
+                if len(anno_actions) == len(anno_affordances) == len(anno_objs): #13 annotations are missing something here ...
+                    for ac, af, ob in zip(anno_actions, anno_affordances, anno_objs):
+                        if af.isnumeric(): # min one annotation had it flipped...
+                            af, ob = ob, af
+
+                        if ob.isnumeric() and "category" in annotation["regions"][int(ob) - 1]["region_attributes"]:
+                            if int(ob) - 1 in remap_human_id: # I am currenntly not interested in links between humans
+                                continue
+                            annotated_connections.append((remap_human_id[region_id], remap_obj_id[int(ob) - 1]))
+                            annotated_actions.append(ac)
+                            annotated_affordances.append(af)
+                else:
+                    error_count += 1
+        hicodet_anno["human_bboxes_ori"] = human_bboxes_ori
+        hicodet_anno["object_bboxes_ori"] = object_bboxes_ori
+        hicodet_anno["annotated_connections"] = annotated_connections
+        hicodet_anno["annotated_actions"] = annotated_actions
+        hicodet_anno["annotated_affordances"] = annotated_affordances
+
+    print(error_count)
 
 
 if __name__ == "__main__":
@@ -264,18 +393,22 @@ if __name__ == "__main__":
     parser.add_argument('--processed_path', default='results_hico_merge_2015.json', type=str)
     parsed_args = parser.parse_args()
 
-    #generate_detr_vs_hicodet_df(parsed_args)
-    #pandas_df = pd.read_csv("object_detection.csv", index_col=0)
-    #generate_sns(pandas_df)
+    """
+    error_dfs = generate_detr_vs_ori_df(parsed_args, 0.2)
+    graph = generate_matplot_graph(list(error_dfs.values()), error_dfs.keys())
+    plt.tight_layout()
+    plt.savefig("images/OriAnnotation Front-Up vs DETR with threshold 0.2.png")
+    plt.show()
+    """
 
+    """
+    df = generate_APm_DETR(parsed_args)
+    generate_matplot_graph_with_line(df,
+                                     ['hicodet_gibsonian_train_count', 'hicodet_telic_train_count', 'hicodet_obj_train_count'],
+                                     ['gibsonian_score', 'telic_score'])
+    plt.tight_layout()
+    plt.savefig("images/UPT HOI Scores.png")
+    plt.show()
+    """
 
-    #error_dfs = generate_detr_vs_ori_df(parsed_args)
-    #graph = generate_matplot_graph(list(error_dfs.values()), error_dfs.keys())
-    #plt.tight_layout()
-    #plt.show()
-
-    generate_APm_DETR(parsed_args)
-
-
-
-
+    df = merge_everything(parsed_args)

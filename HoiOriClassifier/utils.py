@@ -1,4 +1,5 @@
 import random
+import copy
 import numpy as np
 import torchvision.transforms as transforms
 
@@ -72,6 +73,56 @@ def get_iou(bb1, bb2):
     assert iou >= 0.0
     assert iou <= 1.0
     return iou
+
+
+def merge_bboxes(annotation, object_names, verb_names, threshold=0.5):
+    """
+    Merges BBoxes between multiple Hois
+    :param annotation: json
+    :param threshold: float
+    :return: json; Merged Annotation with global bboxes
+    """
+    #annotation = copy.deepcopy(annotation)
+    human_bboxes = []  # List with merged human_bboxes.
+    object_bboxes = []  # List with merged object_bboxes.
+    object_labels = []
+    connections = []
+    connection_verbs = []
+
+
+    for h_bbox, o_bbox, obj, verb in zip(annotation["boxes_h"], annotation["boxes_o"], annotation["object"], annotation["verb"]):
+        human_id = -1
+        for ref_idx, ref_box in enumerate(human_bboxes):
+            iou = get_iou({"x1": h_bbox[0], "x2": h_bbox[2], "y1": h_bbox[1], "y2": h_bbox[3]}, {"x1": ref_box[0], "x2": ref_box[2], "y1": ref_box[1], "y2": ref_box[3]})
+            if iou > threshold:  # If intersection_over_union is over Threshold, Merge
+                human_id = ref_idx
+                break
+        if human_id < 0:
+            human_bboxes.append(h_bbox)
+            human_id = len(human_bboxes) - 1
+
+        obj_id = -1
+        for ref_idx, (ref_box, ref_box_lab) in enumerate(zip(object_bboxes, object_labels)):
+            iou = get_iou({"x1": o_bbox[0], "x2": o_bbox[2], "y1": o_bbox[1], "y2": o_bbox[3]}, {"x1": ref_box[0], "x2": ref_box[2], "y1": ref_box[1], "y2": ref_box[3]})
+            if iou > threshold and ref_box_lab == obj:  # If intersection_over_union is over Threshold, Merge
+                obj_id = ref_idx
+                break
+        if obj_id < 0:
+            object_bboxes.append(o_bbox)
+            object_labels.append(obj)
+            obj_id = len(object_bboxes) - 1
+
+        connections.append((human_id, obj_id))
+        connection_verbs.append(verb)
+
+    new_format_annotation = {}
+    new_format_annotation["human_bboxes"] = human_bboxes
+    new_format_annotation["object_bboxes"] = object_bboxes
+    new_format_annotation["object_labels"] = [object_names[x] for x in object_labels]
+    new_format_annotation["connections"] = connections
+    new_format_annotation["connection_verbs"] = [verb_names[x] for x in connection_verbs]
+
+    return new_format_annotation
 
 
 colors = ["#000000", "#FF3300", "#4ade80", "#facc15", "#60a5fa", "#fb923c", "#c084fc", "#22d3ee", "#a3e635", "#663300",
