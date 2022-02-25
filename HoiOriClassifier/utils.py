@@ -10,7 +10,7 @@ def get_rng_colors(count):
 
 
 def ori_dict_to_vec(ori_dict):
-    vector = np.zeros(3)
+    vector = [0, 0, 0]
     keys = ori_dict.keys()
     if "n/a" in keys or len(keys) == 0:
         return vector
@@ -19,13 +19,13 @@ def ori_dict_to_vec(ori_dict):
     elif "-x" in keys:
         vector[0] = -1
     elif "+y" in keys:
-        vector[2] = 1
-    elif "-y" in keys:
-        vector[2] = -1
-    elif "+z" in keys:
         vector[1] = 1
-    elif "-z" in keys:
+    elif "-y" in keys:
         vector[1] = -1
+    elif "+z" in keys:
+        vector[2] = 1
+    elif "-z" in keys:
+        vector[2] = -1
     else:
         print(ori_dict)
         print("!!!!!!!!!!!!!!!!!")
@@ -123,6 +123,18 @@ def merge_bboxes(annotation, object_names, verb_names, threshold=0.5):
     new_format_annotation["connection_verbs"] = [verb_names[x] for x in connection_verbs]
 
     return new_format_annotation
+
+
+def ori_vec_to_binvec(vector):
+    bin_vec = [0, 0, 0]
+    if np.count_nonzero(vector) > 0:
+        vector_abs = np.abs(vector)
+        vector_amax = np.argmax(vector_abs)
+        if vector[vector_amax] > 0:
+            bin_vec[vector_amax] = 1
+        else:
+            bin_vec[vector_amax] = -1
+    return bin_vec
 
 
 colors = ["#000000", "#FF3300", "#4ade80", "#facc15", "#60a5fa", "#fb923c", "#c084fc", "#22d3ee", "#a3e635", "#663300",
