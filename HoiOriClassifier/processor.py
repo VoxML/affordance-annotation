@@ -118,10 +118,10 @@ class ImageProcessor:
         vp_pred[:, 1] = vp_pred[:, 1] - 90.
         vp_pred[:, 2] = vp_pred[:, 2] - 180.
 
-        vp_pred = vp_pred * np.pi / 180. # change degrees to radians
+        vp_pred = vp_pred * np.pi / 180.  # change degrees to radians
         R_pred = angles_to_matrix(vp_pred)
         orientation_results = []
-        for r_pred in R_pred:
+        for r_pred, r_label in zip(R_pred, box_label_names):
             r_pred = r_pred.view(-1, 3)
             r_pred = r_pred.detach().cpu().numpy()
             orientation_results.append({"front": r_pred.dot(self.front_vec)[self.remap_ori].tolist(),
