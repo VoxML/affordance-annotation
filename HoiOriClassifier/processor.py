@@ -123,7 +123,7 @@ class ImageProcessor:
         #vp_pred = vp_pred * np.pi / 180. # change degrees to radians
         #R_pred = angles_to_matrix(vp_pred)
         orientation_results = []
-        for r_pred in vp_pred:
+        for r_pred, obj_label in zip(vp_pred, box_label_names):
             [azi, ele, inp] = r_pred.detach().cpu().numpy()
             inp = -inp
             r_pred_rot = R.from_euler('zxy', [azi, ele, inp], degrees=True)
@@ -139,6 +139,9 @@ class ImageProcessor:
             #left = r_pred.dot(self.left_vec)[self.remap_ori].tolist()
             left = r_pred_rot.apply(self.left_vec)[self.remap_ori].tolist()
             left[2] *= -1
+
+            if obj_label == "knife":
+                front, left = left, front
 
             orientation_results.append({"front": front,
                                         "up": up,
