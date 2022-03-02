@@ -124,7 +124,7 @@ class ImageProcessor:
         #R_pred = angles_to_matrix(vp_pred)
         orientation_results = []
         for r_pred in vp_pred:
-            [azi, ele, inp] = vp_pred[0].detach().cpu().numpy()
+            [azi, ele, inp] = r_pred.detach().cpu().numpy()
             inp = -inp
             r_pred_rot = R.from_euler('zxy', [azi, ele, inp], degrees=True)
             #r_pred = r_pred.view(-1, 3)
