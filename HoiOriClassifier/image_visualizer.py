@@ -76,10 +76,12 @@ class App(QWidget):
         obj_text = ""
         for bbox_id, (bbox, bbox_label, bbox_label_name, bbox_score, bbox_ori) in \
                 enumerate(zip(results["boxes"], results["boxes_label"], results["boxes_label_names"], results["boxes_scores"], results["boxes_orientation"])):
+            rotation = bbox_ori["rotation"]
             obj_text += f"{bbox_id}_{bbox_label_name}: {bbox_score}\n" \
                         f"\tup: {bbox_ori['up']}\n" \
                         f"\tfront: {bbox_ori['front']}\n" \
-                        f"\tleft: {bbox_ori['left']}\n\n"
+                        f"\tleft: {bbox_ori['left']}\n" \
+                        f"\t\tazi: {rotation['azi']},ele: {rotation['ele']}, inp: {rotation['inp']}\n\n"
         self.obj_textbox.setText(obj_text)
 
     def update_hoi_textbox(self, results):

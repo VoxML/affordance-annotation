@@ -142,7 +142,12 @@ class ImageProcessor:
 
             orientation_results.append({"front": front,
                                         "up": up,
-                                        "left": left})
+                                        "left": left,
+                                        "rotation":
+                                            {"azi": azi,
+                                             "ele": ele,
+                                             "inp": inp}})
+
         result_dict["boxes_orientation"] = orientation_results
         return result_dict
 
