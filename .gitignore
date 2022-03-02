@@ -13,3 +13,7 @@ AffordanceModelOld/.idea/
 
 HoiOriClassifier/.idea/
 HoiOriClassifier/data/models
+HoiOriClassifier/results_hico_merge_2015.json
+HoiOriClassifier/hicodet_cut/*
+
+OriAffCheckClassify/.idea/*
