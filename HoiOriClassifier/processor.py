@@ -11,6 +11,8 @@ from utils import resize_pad
 from PoseContrast.model.resnet import resnet50
 from PoseContrast.model.vp_estimator import BaselineEstimator
 from PoseContrast.model.model_utils import angles_to_matrix
+from scipy.spatial.transform import Rotation as R
+
 
 class ImageProcessor:
     def __init__(self, args):
@@ -43,7 +45,7 @@ class ImageProcessor:
 
         # For Orientation Mapping
         self.left_vec = np.array([1., 0., 0.])
-        self.front_vec = np.array([0., 1., 0.])
+        self.front_vec = np.array([0., -1., 0.])
         self.up_vec = np.array([0., 0., 1.])
 
         # Switch y and z axes because different conventions
@@ -118,15 +120,34 @@ class ImageProcessor:
         vp_pred[:, 1] = vp_pred[:, 1] - 90.
         vp_pred[:, 2] = vp_pred[:, 2] - 180.
 
-        vp_pred = vp_pred * np.pi / 180.  # change degrees to radians
-        R_pred = angles_to_matrix(vp_pred)
+        #vp_pred = vp_pred * np.pi / 180. # change degrees to radians
+        #R_pred = angles_to_matrix(vp_pred)
         orientation_results = []
-        for r_pred, r_label in zip(R_pred, box_label_names):
-            r_pred = r_pred.view(-1, 3)
-            r_pred = r_pred.detach().cpu().numpy()
-            orientation_results.append({"front": r_pred.dot(self.front_vec)[self.remap_ori].tolist(),
-                                        "up": r_pred.dot(self.up_vec)[self.remap_ori].tolist(),
-                                        "left": r_pred.dot(self.left_vec)[self.remap_ori].tolist()})
+        for r_pred in vp_pred:
+            [azi, ele, inp] = r_pred.detach().cpu().numpy()
+            inp = -inp
+            r_pred_rot = R.from_euler('zxy', [azi, ele, inp], degrees=True)
+            #r_pred = r_pred.view(-1, 3)
+            #r_pred = r_pred.detach().cpu().numpy()
+
+            #front = r_pred.dot(self.front_vec)[self.remap_ori].tolist()
+            front = r_pred_rot.apply(self.front_vec)[self.remap_ori].tolist()
+            front[2] *= -1
+            #up = r_pred.dot(self.up_vec)[self.remap_ori].tolist()
+            up = r_pred_rot.apply(self.up_vec)[self.remap_ori].tolist()
+            up[2] *= -1
+            #left = r_pred.dot(self.left_vec)[self.remap_ori].tolist()
+            left = r_pred_rot.apply(self.left_vec)[self.remap_ori].tolist()
+            left[2] *= -1
+
+            orientation_results.append({"front": front,
+                                        "up": up,
+                                        "left": left,
+                                        "rotation":
+                                            {"azi": azi,
+                                             "ele": ele,
+                                             "inp": inp}})
+
         result_dict["boxes_orientation"] = orientation_results
         return result_dict
 
