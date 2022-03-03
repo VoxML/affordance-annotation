@@ -167,5 +167,4 @@ class ImageProcessor:
                 img = os.path.join(folder, file)
                 result = self.process_image(img)
                 results[file] = result
-                return results
         return results
