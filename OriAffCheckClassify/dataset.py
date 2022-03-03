@@ -1,16 +1,19 @@
 import json
-
+import os.path
 import numpy as np
+
 from tqdm import tqdm
 from torch.utils.data import Dataset
-
+from PIL import Image
 
 class HicoDetDataset(Dataset):
-    def __init__(self, anno_file="", img_path="", train=True):
+    def __init__(self, anno_file="", img_path="", train=True, filter_obj=None):
         self.anno_file = anno_file
         self.img_path = img_path
 
         self.data = []
+
+        self.map_affordance_lab = {"G": 0, "G pot. T": 1, "T": 2}
 
         with open(self.anno_file) as json_file:
             anno_data = json.load(json_file)
@@ -18,6 +21,12 @@ class HicoDetDataset(Dataset):
         self.annotations = []
         for _, annotation in tqdm(anno_data["_via_img_metadata"].items()):
             filename = annotation["filename"]
+
+            if "test2015" in filename and train:
+                continue
+
+            if "train2015" in filename and not train:
+                continue
 
             for region_id, region in enumerate(annotation["regions"]):
 
@@ -53,51 +62,39 @@ class HicoDetDataset(Dataset):
                     continue
                 elif region["region_attributes"]["category"] == "object":
                     obj_name = region["region_attributes"]["obj name"].replace(" ", "_")
-                    if region["region_attributes"]["affordance"] != "":
-                        bbox = [region["shape_attributes"]["x"], region["shape_attributes"]["y"],
-                                region["shape_attributes"]["x"] + region["shape_attributes"]["width"],
-                                region["shape_attributes"]["y"] + region["shape_attributes"]["height"]]
-                        front_vec = ori_dict_to_vec(region["region_attributes"]["front"])
-                        up_vec = ori_dict_to_vec(region["region_attributes"]["up"])
-                        rot_mat = self.compute_rotation(front_vec, up_vec)
-                        print(front_vec)
-                        print(up_vec)
-                        print(rot_mat)
-                        print("==========")
-                        affordance = region["region_attributes"]["affordance"]
-                        self.annotations.append({"img_file": filename, "obj_name": obj_name,
-                                                 "bbox": bbox, "front": front_vec, "up": up_vec, "affordance": affordance})
+                    if filter_obj is None or filter_obj == obj_name:
+                        if region["region_attributes"]["affordance"] != "":
+                            bbox = [region["shape_attributes"]["x"], region["shape_attributes"]["y"],
+                                    region["shape_attributes"]["x"] + region["shape_attributes"]["width"],
+                                    region["shape_attributes"]["y"] + region["shape_attributes"]["height"]]
+                            front_vec = ori_dict_to_vec(region["region_attributes"]["front"])
+                            up_vec = ori_dict_to_vec(region["region_attributes"]["up"])
+
+                            affordance = region["region_attributes"]["affordance"]
+                            if affordance == "None":
+                                continue
+                            affordance_lab = self.map_affordance_lab[affordance]
+                            self.annotations.append({"img_file": filename, "obj_name": obj_name,
+                                                     "bbox": np.array(bbox), "front": front_vec, "up": up_vec,
+                                                     "affordance": affordance, "affordance_lab": affordance_lab})
                 else:
                     print("???????????????????")  # Not human nore object. should never happen.
                     exit()
-        #print(self.annotations)
-        #print(len(self.annotations))
 
     def __getitem__(self, idx):
-        # ....
-        return None
+        img_path = os.path.join(self.img_path, self.annotations[idx]["img_file"])
+        img = Image.open(img_path).convert('RGB')
+        img = np.array(img)
+        anno = self.annotations[idx]
+        #anno["img"] = img
+        return anno
 
     def __len__(self):
-        return len(self.data)
-
-    def compute_rotation(self, front, up):
-        rot_mat = np.zeros((3, 3))
-        rot_mat[1] = up
-
-
-        if sum(front) == 0:
-            rot_mat[2] = [0, 0, 1]
-        else:
-            rot_mat[2] = front
-
-
-        rot_mat[0] = left
-
-        return rot_mat
+        return len(self.annotations)
 
 
 def ori_dict_to_vec(ori_dict):
-    vector = [0, 0, 0]
+    vector = np.zeros(3)
     keys = ori_dict.keys()
     if "n/a" in keys or len(keys) == 0:
         return vector
@@ -152,5 +149,8 @@ def get_iou(bb1, bb2):
 
 
 if __name__ == "__main__":
-    data = HicoDetDataset("D:/Corpora/HICO-DET/via234_1200 items_train verified v2.json",
-                          "D:/Corpora/HICO-DET/hico_20160224_det/images/merge2015")
+    train_data = HicoDetDataset("D:/Corpora/HICO-DET/via234_1200 items_train verified v2.json",
+                          "D:/Corpora/HICO-DET/hico_20160224_det/images/merge2015", train=True, filter_obj=None)
+
+    test_data = HicoDetDataset("D:/Corpora/HICO-DET/via234_1200 items_train verified v2.json",
+                          "D:/Corpora/HICO-DET/hico_20160224_det/images/merge2015", train=False, filter_obj=None)

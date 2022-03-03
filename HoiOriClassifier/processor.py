@@ -147,9 +147,9 @@ class ImageProcessor:
                                         "up": up,
                                         "left": left,
                                         "rotation":
-                                            {"azi": azi,
-                                             "ele": ele,
-                                             "inp": inp}})
+                                            {"azi": float(azi),
+                                             "ele": float(ele),
+                                             "inp": float(inp)}})
 
         result_dict["boxes_orientation"] = orientation_results
         return result_dict
@@ -167,4 +167,5 @@ class ImageProcessor:
                 img = os.path.join(folder, file)
                 result = self.process_image(img)
                 results[file] = result
+                return results
         return results
