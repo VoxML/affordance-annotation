@@ -75,7 +75,7 @@ def generate_matplot_graph_with_line(df, box_values, line_values):
     ax2.legend(lines, line_values, loc=1)
 
 
-def generate_detr_vs_ori_df(config, threshhold=0.8):
+def generate_detr_vs_ori_df(config, threshhold=0.8, ori="up"):
     anno_path = os.path.join(config.hicodet_path, "via234_1200 items_train verified.json")
     filter_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
     with open(anno_path) as json_file:
@@ -84,7 +84,7 @@ def generate_detr_vs_ori_df(config, threshhold=0.8):
     with open(config.processed_path) as json_file:
         pred_data = json.load(json_file)
 
-    error_dfs = {"correct": pd.DataFrame(), "not_det": pd.DataFrame(), "wrong_det": pd.DataFrame()}
+    error_dfs = {"correct": pd.DataFrame(), "not_det": pd.DataFrame(), "new": pd.DataFrame()}
 
     for _, annotation in tqdm(anno_data["_via_img_metadata"].items()):
         filename = annotation["filename"]
@@ -97,9 +97,15 @@ def generate_detr_vs_ori_df(config, threshhold=0.8):
 
             front_vec = ori_dict_to_vec(region["region_attributes"]["front"])
             up_vec = ori_dict_to_vec(region["region_attributes"]["up"])
-            selected_orientation = f"{front_vec}_{up_vec}"
-            # selected_orientation = f"{front_vec}"
-            # selected_orientation = f"{up_vec}"
+            if ori == "front-up":
+                selected_orientation = f"{front_vec}_{up_vec}"
+            elif ori == "front":
+                selected_orientation = f"{front_vec}"
+            elif ori == "up":
+                selected_orientation = f"{up_vec}"
+            else:
+                print("!!!!!!!!")
+                exit()
 
             if "category" not in region["region_attributes"]:
                 continue
@@ -141,7 +147,7 @@ def generate_detr_vs_ori_df(config, threshhold=0.8):
                     found_other = True
 
             if not found and not found_other:
-                error_dfs["wrong_det"].loc[selected_orientation, name] += 1
+                error_dfs["new"].loc[selected_orientation, name] += 1
             elif not found:
                 error_dfs["not_det"].loc[selected_orientation, name] += 1
 
@@ -439,7 +445,7 @@ def generate_anno_hoi_vs_auto_hoi(annos, config):
     return auto_gibs_df, auto_telic_df
 
 
-def AnnoHoi_vs_Ori(annos, config, auto=True, ori="up"):
+def Hoi_vs_AnnoOri(annos, config, auto=False, ori="up"):
     object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
     hoi_annotation = {}  # {obj#verb: T/G/-} (string)
     with open(os.path.join(config.hicodet_path, "HOI.txt")) as file:
@@ -560,11 +566,15 @@ if __name__ == "__main__":
     parsed_args = parser.parse_args()
 
     """
-    error_dfs = generate_detr_vs_ori_df(parsed_args, 0.2)
-    graph = generate_matplot_graph(list(error_dfs.values()), error_dfs.keys())
-    plt.tight_layout()
-    plt.savefig("images/OriAnnotation Front-Up vs DETR with threshold 0.2.png")
-    plt.show()
+    for thresh in [0.2, 0.5, 0.8, 0.9]:
+        for ori in ["front-up"]: #["front", "up", "front-up"]:
+            error_dfs = generate_detr_vs_ori_df(parsed_args, thresh, ori)
+            graph = generate_matplot_graph(list(error_dfs.values()), error_dfs.keys(),
+                                           title=f"OriAnnotation {ori} vs DETR with threshold {thresh}")
+            #plt.tight_layout()
+            plt.savefig(f"images/OriAnnotation {ori} vs DETR with threshold {thresh}.png", bbox_inches='tight')
+            #plt.savefig(f"images/OriAnnotation {ori} vs DETR with threshold {thresh}.png")
+            plt.show()
     """
 
     """
@@ -572,6 +582,7 @@ if __name__ == "__main__":
     generate_matplot_graph_with_line(df,
                                      ['hicodet_gibsonian_train_count', 'hicodet_telic_train_count', 'hicodet_obj_train_count'],
                                      ['gibsonian_score', 'telic_score'])
+    plt.title("UPT HOI Scores")
     plt.tight_layout()
     plt.savefig("images/UPT HOI Scores.png")
     plt.show()
@@ -582,21 +593,31 @@ if __name__ == "__main__":
     auto_gibs_df, auto_telic_df = generate_anno_hoi_vs_auto_hoi(merged_hicodet, parsed_args)
     graph = generate_matplot_graph([auto_gibs_df, auto_telic_df], ["auto_gibs", "auto_telic"])
     plt.tight_layout()
+    plt.title("Auto Affordance vs Anno Affordance")
     plt.savefig("images/Auto Hoi vs Anno Hoi.png")
     plt.show()
     """
 
-    """
     merged_hicodet = merge_everything(parsed_args)
-    dfs = AnnoHoi_vs_Ori(merged_hicodet, parsed_args)
-    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"])
-    plt.tight_layout()
-    #plt.savefig("images/Auto Hoi vs Anno Hoi.png")
-    plt.show()
-    """
+    for ori in ["front", "up", "front-up"]:
+        for auto in [True, False]:
+            if auto:
+                name = "pred. affordance"
+            else:
+                name = "annotated affordance"
 
+            dfs = Hoi_vs_AnnoOri(merged_hicodet, parsed_args, ori=ori, auto=auto)
+            graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"])
+            plt.tight_layout()
+            plt.title(f"{ori} vs {name}")
+            plt.savefig(f"images/Ori {ori} vs {name}.png")
+            plt.show()
+
+
+    """
     dfs = ModelHoi_vs_Ori(parsed_args, "both")
     graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"])
     plt.tight_layout()
     #plt.savefig("images/Auto Hoi vs Anno Hoi.png")
     plt.show()
+    """
