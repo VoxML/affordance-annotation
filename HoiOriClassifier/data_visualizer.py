@@ -77,9 +77,8 @@ def convert_df_to_long(df, factor=0.9):
     return df_filtered_long
 
 
-def generate_sns(df):
+def generate_sns(df, factor=0.2):
     #https://stackoverflow.com/questions/22787209/how-to-have-clusters-of-stacked-bars-with-python-pandas
-    factor = 0.2
     df = convert_df_to_long(df, factor)
     sns.set(rc={'figure.figsize': (30, 10)})
     for i, g in enumerate(df.groupby("stack")):
@@ -246,18 +245,19 @@ def generate_detr_vs_ori_df(config):
     #df = df.transpose()
 
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hicodet_path', default="D:/Corpora/HICO-DET", type=str)
-    parser.add_argument('--processed_path', default='results_hico_merge_2015.json', type=str)
+    parser.add_argument('--processed_path', default='results_hico_merge_2015_v2.json', type=str)
     parsed_args = parser.parse_args()
 
     #generate_detr_vs_hicodet_df(parsed_args)
     pandas_df = pd.read_csv("object_detection.csv", index_col=0)
-    generate_sns(pandas_df)
+    generate_sns(pandas_df, 0.2)
+    generate_sns(pandas_df, 0.5)
+    generate_sns(pandas_df, 0.8)
+    generate_sns(pandas_df, 0.9)
 
     # OUTDATED!!! (see v2)
     #pandas_df = generate_detr_vs_ori_df(parsed_args)

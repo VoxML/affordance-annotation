@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import utils
+
 plt.rcParams["figure.figsize"] = (20, 5)
 
 from tqdm import tqdm
@@ -55,24 +57,25 @@ H is the hatch used for identification of the different dataframe"""
     return axe
 
 
-def generate_matplot_graph_with_line(df, box_values, line_values):
+def generate_matplot_graph_with_line(df, box_values, line_values=None):
     # fig = plt.figure()
     ax = df[box_values].plot(kind='bar', use_index=True)
     ax2 = ax.twinx()
-    lines = ax2.plot(df[line_values].values, linestyle='-', marker='o', linewidth=2.0)
+    if line_values != None:
+        lines = ax2.plot(df[line_values].values, linestyle='-', marker='o', linewidth=2.0)
 
-    # https://matplotlib.org/stable/_images/dflt_style_changes-1.png
-    x = np.arange(0, len(df.index), 1)
+        # https://matplotlib.org/stable/_images/dflt_style_changes-1.png
+        x = np.arange(0, len(df.index), 1)
 
-    color = ["#1f77b4", '#ff7f0e'] * 100
-    for line_idx, line_value in enumerate(line_values):
-        y_mean = [df[line_value].mean()] * len(df.index)
-        ax2.plot(x, y_mean, label=f'{line_value} mean', linestyle='--', color=color[line_idx])
+        color = ["#1f77b4", '#ff7f0e'] * 100
+        for line_idx, line_value in enumerate(line_values):
+            y_mean = [df[line_value].mean()] * len(df.index)
+            ax2.plot(x, y_mean, label=f'{line_value} mean', linestyle='--', color=color[line_idx])
 
     # y_mean = [df['telic_score'].mean()] * len(df.index)
     # ax2.plot(x, y_mean, label='Telic Mean', linestyle='--', color='#ff7f0e')
 
-    ax2.legend(lines, line_values, loc=1)
+        ax2.legend(lines, line_values, loc=1)
 
 
 def generate_detr_vs_ori_df(config, threshhold=0.8, ori="up"):
@@ -294,6 +297,7 @@ def merge_everything(config):
     for file_name, annotation in zip(eval_data["filenames"], eval_data["annotation"]):
         train_data_merged = merge_bboxes(annotation, object_names, verb_names)
         merged_results[file_name] = train_data_merged
+
     error_count = 0
     # Add Anju Annotations
     for _, annotation in tqdm(anno_data["_via_img_metadata"].items()):
@@ -513,6 +517,74 @@ def Hoi_vs_AnnoOri(annos, config, auto=False, ori="up"):
     return dfs
 
 
+def AnnoHoi_vs_RelativeAnnoOri(annos, config):
+    object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
+    hoi_annotation = {}  # {obj#verb: T/G/-} (string)
+    with open(os.path.join(config.hicodet_path, "HOI.txt")) as file:
+        for line in file:
+            splitline = line.split()
+            if len(splitline) > 3:
+                if splitline[3] == "T":
+                    hoi_annotation[(splitline[1], splitline[2])] = "telic"
+                elif splitline[3] == "G":
+                    hoi_annotation[(splitline[1], splitline[2])] = "gibsonian"
+
+    dfs = {"gibsonian": pd.DataFrame(), "gibs / telic": pd.DataFrame() , "telic": pd.DataFrame()}
+
+    anno_map = {"T": "telic", "G": "gibsonian", "G pot. T": "gibs / telic"}
+
+    for anno_file, anno in annos["annotations"].items():
+        if "annotated_connections" in anno:
+            merged_hois = {}
+            for connection, verb in zip(anno["annotated_connections"], anno["annotated_affordances"]):
+                if verb == "None":
+                    continue
+                if connection in merged_hois:
+                    if merged_hois[connection] == "gibsonian":
+                        merged_hois[connection] = anno_map[verb]
+                    elif merged_hois[connection] == "gibs / telic" and anno_map[verb] == "telic":
+                        merged_hois[connection] = anno_map[verb]
+                elif connection not in merged_hois:
+                    merged_hois[connection] = anno_map[verb]
+
+            for connection, hoi in merged_hois.items():
+                obj = anno["object_labels"][connection[1]]
+                if obj not in object_names:
+                    continue
+
+                obj_ori = anno["object_bboxes_ori"][connection[1]]
+                if obj_ori is None:
+                    continue
+
+                human_ori = anno["human_bboxes_ori"][connection[0]]
+                if human_ori is None:
+                    continue
+                print("##########")
+                print(anno_file)
+                print(obj_ori)
+                print(human_ori)
+                relative_up, relative_front = utils.relative_orientations(obj_ori[1], obj_ori[0], human_ori[1], human_ori[0])
+                selected_orientation = str(relative_front.tolist())+"_"+str(relative_up.tolist())
+                print(selected_orientation)
+                #if ori == "front":
+                #    selected_orientation = str(obj_ori[0])
+                #elif ori == "up":
+                #    selected_orientation = str(obj_ori[1])
+                #else:
+                #    selected_orientation = str(obj_ori[0])+"_"+str(obj_ori[1])
+
+                if obj not in dfs["gibsonian"].index:
+                    for df in dfs.values():
+                        df.loc[obj, :] = 0
+
+                if selected_orientation not in dfs["gibsonian"].columns:
+                    for df in dfs.values():
+                        df.loc[:, selected_orientation] = 0
+
+                dfs[hoi].loc[obj, selected_orientation] += 1
+    return dfs
+
+
 def ModelHoi_vs_Ori(config, ori="front", threshhold = 0.8):
     with open(config.processed_path) as json_file:
         pred_data = json.load(json_file)
@@ -558,6 +630,111 @@ def ModelHoi_vs_Ori(config, ori="front", threshhold = 0.8):
 
     return dfs
 
+
+def ModelHoi_vs_RelativeOri(config, threshhold = 0.8):
+    with open(config.processed_path) as json_file:
+        pred_data = json.load(json_file)
+
+    dfs = {"gibsonian": pd.DataFrame(), "telic": pd.DataFrame()}
+    anno_map = {"T": "telic", "G": "gibsonian"}
+
+    for anno_file, anno in tqdm(pred_data.items()):
+        if len(anno) == 0:
+            continue
+        for x in range(0, len(anno["pairing_label"]), 2):
+            hum_id = anno["pairing"][0][x]
+            hum_id_score = anno["boxes_scores"][hum_id]
+            hum_orientation = anno["boxes_orientation"][hum_id]
+
+            obj_id = anno["pairing"][1][x]
+            obj_id_score = anno["boxes_scores"][obj_id]
+            obj_name = anno["boxes_label_names"][obj_id]
+            obj_orientation = anno["boxes_orientation"][obj_id]
+
+            relative_up, relative_front = utils.relative_orientations(
+                ori_vec_to_binvec(obj_orientation["up"]), ori_vec_to_binvec(obj_orientation["front"]),
+                ori_vec_to_binvec(hum_orientation["up"]), ori_vec_to_binvec(hum_orientation["front"]))
+
+            selected_orientation = str(relative_up.tolist()) + "_" + str(relative_front.tolist())
+            g_score = anno["pairing_scores"][x]
+            t_score = anno["pairing_scores"][x+1]
+
+
+            if hum_id_score > threshhold and obj_id_score > threshhold:
+                if max(g_score, t_score) > 0.2:
+                    if obj_name not in dfs["gibsonian"].index:
+                        for df in dfs.values():
+                            df.loc[obj_name, :] = 0
+
+                    if selected_orientation not in dfs["gibsonian"].columns:
+                        for df in dfs.values():
+                            df.loc[:, selected_orientation] = 0
+
+                    if g_score > t_score:
+                        dfs["gibsonian"].loc[obj_name, selected_orientation] += 1
+                    else:
+                        dfs["telic"].loc[obj_name, selected_orientation] += 1
+
+    return dfs
+
+"""
+def generate_anno_hoi_vs_pred_hoi(annos, config):
+    object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "umbrella"]
+
+    auto_gibs_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "gibs / telic", "telic"])
+    auto_telic_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "gibs / telic", "telic"])
+    anno_map = {"T": "telic", "G": "gibsonian", "G pot. T": "gibs / telic"}
+
+    with open(config.processed_path) as json_file:
+        pred_data = json.load(json_file)
+
+    for anno_file, anno in annos["annotations"].items():
+        if "annotated_connections" in anno:
+            #merged_auto_hois = {}
+            pred_results = pred_data[anno_file]
+            
+            #for connection, verb in zip(anno["connections"], anno["connection_verbs"]):
+            #    obj = anno["object_labels"][connection[1]]
+            #    if (obj, verb) not in hoi_annotation:
+            #        continue
+            #    if connection in merged_auto_hois and merged_auto_hois[connection] != "telic":
+            #        merged_auto_hois[connection] = hoi_annotation[(obj, verb)]
+            #    elif connection not in merged_auto_hois:
+            #        merged_auto_hois[connection] = hoi_annotation[(obj, verb)]
+            
+            merged_anno_hois = {}
+            for connection, verb in zip(anno["annotated_connections"], anno["annotated_affordances"]):
+                if verb == "None":
+                    continue
+                if connection in merged_anno_hois:
+                    if merged_anno_hois[connection] == "gibsonian":
+                        merged_anno_hois[connection] = anno_map[verb]
+                    elif merged_anno_hois[connection] == "gibs / telic" and anno_map[verb] == "telic":
+                        merged_anno_hois[connection] = anno_map[verb]
+                elif connection not in merged_anno_hois:
+                    merged_anno_hois[connection] = anno_map[verb]
+
+            for anno_conntection, hoi in merged_anno_hois.items():
+                hbox = anno["human_bboxes"][anno_conntection[0]]
+                obox = anno["human_bboxes"][anno_conntection[1]]
+                for
+
+            for anno_conntection, hoi in merged_anno_hois.items():
+                obj = anno["object_labels"][anno_conntection[1]]
+                if anno_conntection in merged_auto_hois and obj in object_names:
+                    auto_hoi = merged_auto_hois[anno_conntection]
+                    if auto_hoi == "telic":
+                        auto_telic_df.loc[obj, hoi] += 1
+                    elif auto_hoi == "gibsonian":
+                        auto_gibs_df.loc[obj, hoi] += 1
+                    else:
+                        print("ERRO!")
+                        exit()
+
+    return auto_gibs_df, auto_telic_df
+"""
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
@@ -598,6 +775,7 @@ if __name__ == "__main__":
     plt.show()
     """
 
+    """
     merged_hicodet = merge_everything(parsed_args)
     for ori in ["front", "up", "front-up"]:
         for auto in [True, False]:
@@ -612,12 +790,64 @@ if __name__ == "__main__":
             plt.title(f"{ori} vs {name}")
             plt.savefig(f"images/Ori {ori} vs {name}.png")
             plt.show()
-
+    """
 
     """
-    dfs = ModelHoi_vs_Ori(parsed_args, "both")
-    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"])
+    for ori in ["front", "up", "front-up"]:
+        dfs = ModelHoi_vs_Ori(parsed_args, ori)
+        graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"])
+        plt.tight_layout()
+        plt.title(f"Pred Ori {ori} vs Pred Affordance")
+        plt.savefig(f"images/Pred Ori {ori} vs Pred Affordance.png")
+        plt.show()
+    """
+
+    """
+    obj_thresh = 0.8
+    aff_thresh = 0.4
+    eval_df = pd.read_csv(f"data/eval_results_{obj_thresh}_{aff_thresh}.csv", index_col=0)
+    graph = generate_matplot_graph([eval_df], ["eval_df"])
     plt.tight_layout()
-    #plt.savefig("images/Auto Hoi vs Anno Hoi.png")
+    plt.title(f"UPT Eval Results Obj={obj_thresh}, Aff={aff_thresh}")
+    plt.savefig(f"images/UPT Eval Results Obj={obj_thresh}, Aff={aff_thresh}.png")
     plt.show()
     """
+
+    """
+    merged_hicodet = merge_everything(parsed_args)
+    dfs = AnnoHoi_vs_RelativeAnnoOri(merged_hicodet, parsed_args)
+    for ori in list(dfs.values())[0].head():
+        ori_sum = 0
+        for df in list(dfs.values()):
+            ori_sum += df.loc[:, ori].sum()
+        if ori_sum < 5:
+            #print("drop", ori)
+            for df in list(dfs.values()):
+                df.drop(ori, axis=1, inplace=True)
+                #print(df)
+
+    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"])
+    #plt.tight_layout()
+    plt.title(f"Relative Orientation vs Anno Affordance")
+    plt.savefig(f"images/Relative Orientation vs Anno Affordance.png", bbox_inches='tight')
+    plt.show()
+    """
+
+
+    dfs = ModelHoi_vs_RelativeOri(parsed_args)
+    for ori in list(dfs.values())[0].head():
+        ori_sum = 0
+        for df in list(dfs.values()):
+            ori_sum += df.loc[:, ori].sum()
+        if ori_sum < 5:
+            #print("drop", ori)
+            for df in list(dfs.values()):
+                df.drop(ori, axis=1, inplace=True)
+                #print(df)
+
+    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"])
+    plt.tight_layout()
+    plt.title(f"Pred RelativeOri vs Pred Affordance")
+    plt.savefig(f"images/Pred RelativeOri vs Pred Affordance.png", bbox_inches='tight')
+    plt.show()
+

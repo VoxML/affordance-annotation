@@ -75,6 +75,34 @@ def get_iou(bb1, bb2):
     return iou
 
 
+def relative_orientations(up_vec, front_vec, h_up_vec, h_front_vec):
+    relative_up = np.zeros(3)
+    if np.array_equal(up_vec, relative_up) or np.array_equal(h_up_vec, relative_up) or np.array_equal(up_vec, h_up_vec):
+        relative_up[0] = 1
+    elif np.array_equal(np.negative(up_vec), h_up_vec):
+        relative_up[0] = -1
+    elif np.array_equal(up_vec, h_front_vec):
+        relative_up[1] = 1
+    elif np.array_equal(np.negative(up_vec), h_front_vec):
+        relative_up[1] = -1
+    else:
+        relative_up[2] = 1
+
+    relative_front = np.zeros(3)
+    if np.array_equal(front_vec, relative_front) or np.array_equal(h_front_vec, relative_front) or np.array_equal(
+            front_vec, h_front_vec):
+        relative_front[0] = 1
+    elif np.array_equal(np.negative(front_vec), h_front_vec):
+        relative_front[0] = -1
+    elif np.array_equal(front_vec, h_up_vec):
+        relative_front[1] = 1
+    elif np.array_equal(np.negative(front_vec), h_up_vec):
+        relative_front[1] = -1
+    else:
+        relative_front[2] = 1
+
+    return relative_up, relative_front
+
 def merge_bboxes(annotation, object_names, verb_names, threshold=0.5):
     """
     Merges BBoxes between multiple Hois
