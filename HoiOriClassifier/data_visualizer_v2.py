@@ -4,16 +4,48 @@ import json
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import seaborn as sns
 import utils
-
+import shutil
 plt.rcParams["figure.figsize"] = (20, 5)
 
 from tqdm import tqdm
 from utils import get_iou, ori_dict_to_vec, merge_bboxes, id2label, ori_vec_to_binvec
 
 
-def generate_matplot_graph(dfall, labels=None, title="multiple stacked bar plot", H="/", **kwargs):
+def create_heatmap(df: pd.DataFrame, title: str, subtitle: str = "", cmap="coolwarm", norm=None):
+    df["sent"] = df.index
+    df = pd.melt(df, id_vars=['sent'], var_name='target', value_name="score")
+    df = df.sort_values(by=["sent", "target"])
+
+    if norm is None:
+        scoremax = df["score"].max()
+        scoremin = df["score"].min()
+    else:
+        scoremax = norm[1]
+        scoremin = norm[0]
+
+    #plt.figure(1, figsize=(6, 12))
+    plt.figure(1, figsize=(8, 16))
+
+    ax = sns.scatterplot(x="target", y="sent",
+                         hue="score", size="score",
+                         hue_norm=(scoremin, scoremax), #size_norm=(0, 1),
+                         palette=cmap, sizes=(0, 90),
+                         marker="s", linewidth=0, legend=False,
+                         data=df)
+
+    norm = plt.Normalize(scoremin, scoremax)
+    sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+    ax.figure.colorbar(sm)
+    plt.xticks(rotation=90)
+    # plt.title(title)
+    plt.title(title + '\n' + subtitle)
+    # plt.text(0.5, 1, 'the third line', fontsize=13, ha='center')
+
+
+
+def generate_matplot_graph(dfall, labels=None, title="multiple stacked bar plot", H="/", sort_vals=None, color_dict={}, **kwargs):
     """Given a list of dataframes, with identical columns and index, create a clustered stacked bar plot.
 labels is a list of the names of the dataframe, used for the legend
 title is a string for the title of the plot
@@ -25,12 +57,16 @@ H is the hatch used for identification of the different dataframe"""
     axe = plt.subplot(111)
 
     for df in dfall:  # for each data frame
+        if sort_vals != None:
+            df.sort_index(inplace=True)
+
         axe = df.plot(kind="bar",
                       linewidth=0,
                       stacked=True,
                       ax=axe,
                       legend=False,
                       grid=False,
+                      color=[color_dict.get(x) for x in df.columns],
                       **kwargs)  # make bar plots
 
     h, l = axe.get_legend_handles_labels()  # get the handles we want to modify
@@ -51,9 +87,10 @@ H is the hatch used for identification of the different dataframe"""
         n.append(axe.bar(0, 0, color="gray", hatch=H * i))
 
     l1 = axe.legend(h[:n_col], l[:n_col], loc=[1.01, 0.5])
+    axe.add_artist(l1)
     if labels is not None:
         l2 = plt.legend(n, labels, loc=[1.01, 0.1])
-    axe.add_artist(l1)
+
     return axe
 
 
@@ -514,10 +551,11 @@ def Hoi_vs_AnnoOri(annos, config, auto=False, ori="up"):
                         df.loc[:, selected_orientation] = 0
 
                 dfs[hoi].loc[obj, selected_orientation] += 1
+
     return dfs
 
 
-def AnnoHoi_vs_RelativeAnnoOri(annos, config):
+def AnnoHoi_vs_AnnoOri(annos, config, merge_pot, relative=True):
     object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
     hoi_annotation = {}  # {obj#verb: T/G/-} (string)
     with open(os.path.join(config.hicodet_path, "HOI.txt")) as file:
@@ -559,19 +597,19 @@ def AnnoHoi_vs_RelativeAnnoOri(annos, config):
                 human_ori = anno["human_bboxes_ori"][connection[0]]
                 if human_ori is None:
                     continue
-                print("##########")
-                print(anno_file)
-                print(obj_ori)
-                print(human_ori)
-                relative_up, relative_front = utils.relative_orientations(obj_ori[1], obj_ori[0], human_ori[1], human_ori[0])
-                selected_orientation = str(relative_front.tolist())+"_"+str(relative_up.tolist())
-                print(selected_orientation)
-                #if ori == "front":
-                #    selected_orientation = str(obj_ori[0])
-                #elif ori == "up":
-                #    selected_orientation = str(obj_ori[1])
-                #else:
-                #    selected_orientation = str(obj_ori[0])+"_"+str(obj_ori[1])
+
+                if relative:
+                    relative_up, relative_front = utils.relative_orientations(obj_ori[1], obj_ori[0], human_ori[1], human_ori[0])
+                    relative_up = relative_up.astype(int).tolist()
+                    relative_front = relative_front.astype(int).tolist()
+                else:
+                    relative_up = obj_ori[1]
+                    relative_front = obj_ori[0]
+                selected_orientation = str(relative_front)+"_"+str(relative_up)
+
+                #hoi_save = hoi.replace(" / ", "+")
+                #shutil.copy(os.path.join(config.hicodet_path, "hico_20160224_det", "images", "merge2015", anno_file),
+                #            os.path.join(config.hicodet_path, "hico_20160224_det", "images", "anno_test", f"{obj}-{hoi_save}-{selected_orientation}-{anno_file}"))
 
                 if obj not in dfs["gibsonian"].index:
                     for df in dfs.values():
@@ -582,6 +620,13 @@ def AnnoHoi_vs_RelativeAnnoOri(annos, config):
                         df.loc[:, selected_orientation] = 0
 
                 dfs[hoi].loc[obj, selected_orientation] += 1
+
+    if merge_pot:
+        gibs_df = dfs["gibsonian"]
+        pot_df = dfs["gibs / telic"]
+        test = gibs_df.add(pot_df, fill_value=0)
+        dfs["gibsonian"] = test
+        dfs.pop("gibs / telic")
     return dfs
 
 
@@ -631,7 +676,9 @@ def ModelHoi_vs_Ori(config, ori="front", threshhold = 0.8):
     return dfs
 
 
-def ModelHoi_vs_RelativeOri(config, threshhold = 0.8):
+def ModelHoi_vs_ModelOri(config, filter, threshhold=0.8, relative=True):
+    object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "umbrella"]
+
     with open(config.processed_path) as json_file:
         pred_data = json.load(json_file)
 
@@ -651,11 +698,20 @@ def ModelHoi_vs_RelativeOri(config, threshhold = 0.8):
             obj_name = anno["boxes_label_names"][obj_id]
             obj_orientation = anno["boxes_orientation"][obj_id]
 
-            relative_up, relative_front = utils.relative_orientations(
-                ori_vec_to_binvec(obj_orientation["up"]), ori_vec_to_binvec(obj_orientation["front"]),
-                ori_vec_to_binvec(hum_orientation["up"]), ori_vec_to_binvec(hum_orientation["front"]))
+            if obj_name not in object_names and filter:
+                continue
 
-            selected_orientation = str(relative_up.tolist()) + "_" + str(relative_front.tolist())
+            if relative:
+                relative_up, relative_front = utils.relative_orientations(
+                    ori_vec_to_binvec(obj_orientation["up"]), ori_vec_to_binvec(obj_orientation["front"]),
+                    ori_vec_to_binvec(hum_orientation["up"]), ori_vec_to_binvec(hum_orientation["front"]))
+                relative_up = relative_up.astype(int).tolist()
+                relative_front = relative_front.astype(int).tolist()
+            else:
+                relative_up = ori_vec_to_binvec(obj_orientation["up"])
+                relative_front = ori_vec_to_binvec(obj_orientation["front"])
+
+            selected_orientation = str(relative_front) + "_" + str(relative_up)
             g_score = anno["pairing_scores"][x]
             t_score = anno["pairing_scores"][x+1]
 
@@ -735,11 +791,130 @@ def generate_anno_hoi_vs_pred_hoi(annos, config):
 """
 
 
+def create_annotation_gibs_telic_differance(config):
+    merged_hicodet = merge_everything(config)
+    dfs = AnnoHoi_vs_AnnoOri(merged_hicodet, config, merge_pot=True, relative=True)
+
+    diff_df = pd.DataFrame(columns=dfs["telic"].columns)
+    for obj in dfs["telic"].index:
+        gibs_df = dfs["gibsonian"].loc[obj, :]
+        gibs_df[gibs_df < 2] = 0
+        gibs_sum = gibs_df.sum()
+
+        telic_df = dfs["telic"].loc[obj, :]
+        telic_df[telic_df < 2] = 0
+        telic_sum = telic_df.sum()
+
+        gibs_df[gibs_df < 10] = 0
+        gibs_df = gibs_df / gibs_sum
+        gibs_df[gibs_df < 0.1] = 0
+        gibs_df += 0.000001
+
+        #print(gibs_df)
+        #print("============")
+
+        telic_df[telic_df < 10] = 0
+        telic_df = telic_df / telic_sum
+        telic_df[telic_df < 0.1] = 0
+        telic_df += 0.000001
+        #print(telic_df)
+        #print("===========")
+        #print(gibs_df)
+        #exit()
+        div_df = telic_df.div(gibs_df)
+        div_df = np.log(div_df)
+        #div_df[div_df < 1] = 0
+        diff_df.loc[obj, :] = div_df
+        #print(diff_df)
+
+    diff_df = diff_df.transpose()
+    return diff_df
+
+
+def create_pred_gibs_telic_differance(config, filter=True):
+    dfs = ModelHoi_vs_ModelOri(config, filter=filter, relative=True)
+
+    diff_df = pd.DataFrame(columns=dfs["telic"].columns)
+    for obj in dfs["telic"].index:
+        gibs_df = dfs["gibsonian"].loc[obj, :]
+        gibs_df[gibs_df < 2] = 0
+        gibs_sum = gibs_df.sum()
+        telic_df = dfs["telic"].loc[obj, :]
+        telic_df[telic_df < 2] = 0
+        telic_sum = telic_df.sum()
+
+        gibs_df[gibs_df < 10] = 0
+        gibs_df = gibs_df / gibs_sum
+        gibs_df[gibs_df < 0.1] = 0
+        gibs_df += 0.000001
+
+        telic_df[telic_df < 10] = 0
+        telic_df = telic_df / telic_sum
+        telic_df[telic_df < 0.1] = 0
+        telic_df += 0.000001
+        #print(telic_df)
+        #print(gibs_df)
+
+        div_df = telic_df.div(gibs_df)
+        div_df = np.log2(div_df)
+        diff_df.loc[obj, :] = div_df
+
+    diff_df = diff_df.transpose()
+    return diff_df
+
+
+def create_habitat_df(config):
+    merged_hicodet = merge_everything(config)
+
+    dfs = AnnoHoi_vs_AnnoOri(merged_hicodet, config, merge_pot=True, relative=True)
+    #exit()
+    diff_df = pd.DataFrame(columns=dfs["telic"].columns)
+    for obj in dfs["telic"].index:
+        print(obj)
+        #obj = "car"
+        gibs_df = dfs["gibsonian"].loc[obj, :]
+        gibs_df = gibs_df[gibs_df > 2]
+        gibs_sum = gibs_df.sum()
+
+        #telic_df = dfs["telic"].loc[obj, :]
+        #telic_sum = telic_df.sum()
+
+        gibs_df = gibs_df / gibs_sum
+        gibs_df[gibs_df < 0.2] = 0
+        gibs_oris = gibs_df[gibs_df > 0.2].index
+        print(gibs_oris)
+        #exit()
+        #gibs_df += 0.000001
+
+
+    diff_df = diff_df.transpose()
+    return diff_df
+
+
+def objectnet3d_data_visual():
+    df = pd.read_csv("data/object3d_analysis.csv", index_col=0)
+    df = df[df.columns[df.sum() > 10]]
+    df = df.transpose()
+    df = df / df.sum()
+    df = df.transpose()
+    df = df[df.columns[df.sum() > 0.1]]
+    sum = df.sum()
+    sum.name = "Total"
+    df = df.append(sum)
+    df = df.transpose()
+    df = df.sort_values("Total")
+    df = df.transpose()
+    df = df.drop("Total")
+    return df
+
+
+####################################################################################
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hicodet_path', default="D:/Corpora/HICO-DET", type=str)
-    parser.add_argument('--processed_path', default='results_hico_merge_2015.json', type=str)
+    parser.add_argument('--processed_path', default='results_hico_merge_2015_v2.json', type=str)
     parsed_args = parser.parse_args()
 
     """
@@ -785,7 +960,7 @@ if __name__ == "__main__":
                 name = "annotated affordance"
 
             dfs = Hoi_vs_AnnoOri(merged_hicodet, parsed_args, ori=ori, auto=auto)
-            graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"])
+            graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"], sort_vals=True)
             plt.tight_layout()
             plt.title(f"{ori} vs {name}")
             plt.savefig(f"images/Ori {ori} vs {name}.png")
@@ -813,9 +988,11 @@ if __name__ == "__main__":
     plt.show()
     """
 
+
     """
-    merged_hicodet = merge_everything(parsed_args)
-    dfs = AnnoHoi_vs_RelativeAnnoOri(merged_hicodet, parsed_args)
+    filter = False
+    only_test = False
+    dfs = ModelHoi_vs_RelativeOri(parsed_args, filter, only_test)
     for ori in list(dfs.values())[0].head():
         ori_sum = 0
         for df in list(dfs.values()):
@@ -826,28 +1003,101 @@ if __name__ == "__main__":
                 df.drop(ori, axis=1, inplace=True)
                 #print(df)
 
-    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "gibs-telic", "telic"])
-    #plt.tight_layout()
-    plt.title(f"Relative Orientation vs Anno Affordance")
-    plt.savefig(f"images/Relative Orientation vs Anno Affordance.png", bbox_inches='tight')
-    plt.show()
-    """
-
-
-    dfs = ModelHoi_vs_RelativeOri(parsed_args)
-    for ori in list(dfs.values())[0].head():
-        ori_sum = 0
-        for df in list(dfs.values()):
-            ori_sum += df.loc[:, ori].sum()
-        if ori_sum < 5:
-            #print("drop", ori)
-            for df in list(dfs.values()):
-                df.drop(ori, axis=1, inplace=True)
-                #print(df)
-
-    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"])
+    graph = generate_matplot_graph(list(dfs.values()), ["gibs", "telic"], sort_vals=True)
     plt.tight_layout()
-    plt.title(f"Pred RelativeOri vs Pred Affordance")
-    plt.savefig(f"images/Pred RelativeOri vs Pred Affordance.png", bbox_inches='tight')
+    plt.title(f"Pred RelativeOri vs Pred Affordance - filtered {filter}")
+    plt.savefig(f"images_rel_v2/Pred RelativeOri vs Pred Affordance - filtered {filter}.png", bbox_inches='tight')
     plt.show()
+    """
+
+    """
+    #create_habitat_df(parsed_args)
+
+    diff_df = create_annotation_gibs_telic_differance(parsed_args)
+    create_heatmap(diff_df, title="Heatmap", norm=(-5, 5))
+    plt.tight_layout()
+    plt.title(f"Annotation Gibs-Telic Heatmap")
+    plt.savefig(f"images_new/Annotation Gibs-Telic Heatmap.png", bbox_inches='tight')
+    plt.show()
+
+
+    diff_df = create_pred_gibs_telic_differance(parsed_args)
+    create_heatmap(diff_df, title="Heatmap", norm=(-5, 5))
+    plt.tight_layout()
+    plt.title(f"Pred Gibs-Telic Heatmap")
+    plt.savefig(f"images_new/Pred Gibs-Telic Heatmap.png", bbox_inches='tight')
+    plt.show()
+    """
+
+    """
+    diff_df = create_annotation_gibs_telic_differance(parsed_args)
+    create_heatmap(diff_df, title="Heatmap", norm=(-5, 5))
+    plt.tight_layout()
+    plt.title(f"Annotation Gibs-Telic Heatmap")
+    plt.savefig(f"images_rel_v2/Annotation Gibs-Telic Heatmap.png", bbox_inches='tight')
+    plt.show()
+    """
+
+    """
+    merge_pot = True
+    relative = True
+    #all_oris = set()
+    all_oris = []
+    merged_hicodet = merge_everything(parsed_args)
+    anno_dfs = AnnoHoi_vs_AnnoOri(merged_hicodet, parsed_args, merge_pot, relative=relative)
+    for ori in list(anno_dfs.values())[0].head():
+        ori_sum = 0
+        for df in list(anno_dfs.values()):
+            ori_sum += df.loc[:, ori].sum()
+        if ori_sum < 5:
+            for df in list(anno_dfs.values()):
+                df.drop(ori, axis=1, inplace=True)
+        else:
+            #all_oris.add(ori)
+            if ori not in all_oris:
+                all_oris.append(ori)
+
+    filter = True #Same Objects as Annotation
+    model_dfs = ModelHoi_vs_ModelOri(parsed_args, filter, relative=relative)
+    for ori in list(model_dfs.values())[0].head():
+        ori_sum = 0
+        for df in list(model_dfs.values()):
+            ori_sum += df.loc[:, ori].sum()
+        if ori_sum < 5:
+            for df in list(model_dfs.values()):
+                df.drop(ori, axis=1, inplace=True)
+        else:
+            #all_oris.add(ori)
+            if ori not in all_oris:
+                all_oris.append(ori)
+
+    colors = sns.color_palette("Paired", n_colors=len(all_oris))  # Set3, Paired
+    color_dict = {}
+    #for ori, c in zip(sorted(list(all_oris)), colors):
+    for ori, c in zip(all_oris, colors):
+        color_dict[ori] = c
+
+
+    #graph = generate_matplot_graph(list(anno_dfs.values()), list(anno_dfs.keys()), sort_vals=True, color_dict=color_dict)
+    #plt.tight_layout()
+    #plt.title(f"Anno Relative_{relative} Orientation vs Anno Affordance")
+    #plt.savefig(f"images_new/Anno Relative_{relative} Orientation vs Anno Affordance.png", bbox_inches='tight')
+    #plt.show()
+
+
+    graph = generate_matplot_graph(list(model_dfs.values()), ["gibs", "telic"], sort_vals=True, color_dict=color_dict)
+    plt.tight_layout()
+    plt.title(f"Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All")
+    plt.savefig(f"images_new/Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All.png", bbox_inches='tight')
+    plt.show()
+    """
+
+    df = objectnet3d_data_visual()
+    graph = create_heatmap(df, "Object3D Dataset", cmap="flare")
+    plt.tight_layout()
+    #plt.title(f"Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All")
+    plt.savefig(f"images_new/ObjectNet3D Dist.png", bbox_inches='tight')
+    plt.show()
+
+
 

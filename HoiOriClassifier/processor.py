@@ -54,7 +54,7 @@ class ImageProcessor:
         # Map ObjetID to TextLabel
         self.obj_id_to_label = utils.id2label
 
-    def process_image(self, img_path: str):
+    def process_image(self, img_path: str, with_feature=False):
         #print(img_path)
         result_dict = {}
 
@@ -76,6 +76,9 @@ class ImageProcessor:
 
         # Write Results to Dictionary
         result_dict["boxes_scores"] = output["bscores"].detach().cpu().numpy().tolist()
+
+        if with_feature:
+            result_dict["unary_token"] = output["unary_token"].detach().cpu().numpy().tolist()
 
         result_dict["pairing"] = output["pairing"].detach().cpu().numpy().tolist()
         result_dict["pairing_scores"] = output["scores"].detach().cpu().numpy().tolist()
@@ -154,7 +157,7 @@ class ImageProcessor:
         result_dict["boxes_orientation"] = orientation_results
         return result_dict
 
-    def process_images_in_folder(self, folder):
+    def process_images_in_folder(self, folder, with_feature=False):
         valid_images = [".jpg", ".png"]
 
         if not os.path.isdir(folder):
@@ -165,6 +168,9 @@ class ImageProcessor:
             ext = os.path.splitext(file)[1]
             if ext.lower() in valid_images:
                 img = os.path.join(folder, file)
-                result = self.process_image(img)
+                result = self.process_image(img, with_feature=with_feature)
                 results[file] = result
+                #if len(results) > 50:
+                #    break
         return results
+

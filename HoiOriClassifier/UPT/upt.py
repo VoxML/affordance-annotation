@@ -165,19 +165,19 @@ class UPT(nn.Module):
 
         return region_props
 
-    def postprocessing(self, region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes):
+    def postprocessing(self, region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens):
         n = [len(b) for b in bh]
         logits = logits.split(n)
 
         detections = []
-        for rp, h, o, lg, pr, obj, attn, size in zip(
-            region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes
+        for rp, h, o, lg, pr, obj, attn, size, unary_token in zip(
+            region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens
         ):
             pr = pr.prod(0)
             x, y = torch.nonzero(pr).unbind(1)
             scores = torch.sigmoid(lg[x, y])
             detections.append(dict(
-                boxes=rp["boxes"], bscores=rp["scores"], bhs=rp["hidden_states"],
+                boxes=rp["boxes"], bscores=rp["scores"], bhs=rp["hidden_states"], unary_token=unary_token,
                 pairing=torch.stack([h[x], o[x]]),
                 scores=scores * pr[x, y], labels=y,
                 objects=obj[x], attn_maps=attn, size=size, prior=pr
@@ -244,7 +244,7 @@ class UPT(nn.Module):
 
         boxes = [r['boxes'] for r in region_props]
 
-        detections = self.postprocessing(region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes)
+        detections = self.postprocessing(region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens)
         return detections
 
 

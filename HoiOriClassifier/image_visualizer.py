@@ -165,7 +165,7 @@ class App(QWidget):
         Dialoge for opening and processing image
         Returns: None
         """
-        file_name, test = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.jpg; *.png)")
+        file_name, test = QFileDialog.getOpenFileName(self, "Open Image", "", "Image Files (*.jpg; *.png; *.webp)")
         if file_name:
             self.process_image(file_name)
 

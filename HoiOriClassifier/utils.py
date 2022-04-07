@@ -2,6 +2,34 @@ import random
 import copy
 import numpy as np
 import torchvision.transforms as transforms
+from sklearn.manifold import TSNE
+import pacmap
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+
+def visualize_embeddings(X, Y, tool="tsne", title=""):
+    model = None
+    if tool == "tsne":
+        model = TSNE(n_components=2, verbose=1, random_state=123)
+    elif tool == "pacmap":
+        model = pacmap.PaCMAP(n_dims=2, random_state=123)
+    else:
+        print("Could not find", tool)
+        exit()
+
+    Z = model.fit_transform(X)
+
+    df = pd.DataFrame()
+    df["y"] = Y
+    df["comp-1"] = Z[:, 0]
+    df["comp-2"] = Z[:, 1]
+
+    sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
+                    #palette=sns.color_palette("Paired", 17), #husl, hls
+                    data=df).set(title=title)
+    return plt
 
 
 def get_rng_colors(count):
@@ -75,7 +103,7 @@ def get_iou(bb1, bb2):
     return iou
 
 
-def relative_orientations(up_vec, front_vec, h_up_vec, h_front_vec):
+def relative_orientations_old(up_vec, front_vec, h_up_vec, h_front_vec):
     relative_up = np.zeros(3)
     if np.array_equal(up_vec, relative_up) or np.array_equal(h_up_vec, relative_up) or np.array_equal(up_vec, h_up_vec):
         relative_up[0] = 1
@@ -102,6 +130,36 @@ def relative_orientations(up_vec, front_vec, h_up_vec, h_front_vec):
         relative_front[2] = 1
 
     return relative_up, relative_front
+
+
+def relative_orientations(up_vec, front_vec, h_up_vec, h_front_vec):
+    rot_mat = np.zeros((3,3))
+    rot_mat[1] = h_up_vec
+    rot_mat[2] = h_front_vec
+
+    h_left_vec = np.zeros(3)
+    if h_up_vec[0] == 0 and h_front_vec[0] == 0:
+        h_left_vec[0] = 1
+    elif h_up_vec[1] == 0 and h_front_vec[1] == 0:
+        h_left_vec[1] = 1
+    elif h_up_vec[2] == 0 and h_front_vec[2] == 0:
+        h_left_vec[2] = 1
+
+    # These are the special cases ...
+    if h_up_vec[1] == 1 and h_front_vec[0] == 1:
+        h_left_vec *= -1
+    elif h_up_vec[2] == 1 and h_front_vec[1] == 1:
+        h_left_vec *= -1
+    elif h_up_vec[0] == 1 and h_front_vec[2] == 1:
+        h_left_vec *= -1
+
+    if np.sum(h_up_vec) + np.sum(h_front_vec) == 0: # One is +1 the other -1
+        h_left_vec *= -1
+
+    rot_mat[0] = h_left_vec
+
+    return rot_mat.dot(up_vec), rot_mat.dot(front_vec)
+
 
 def merge_bboxes(annotation, object_names, verb_names, threshold=0.5):
     """
