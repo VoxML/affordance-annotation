@@ -59,12 +59,8 @@ def visualize_unary_token(args):
 
 def visualize_pair_token(args):
     print("Load File")
+    data = []
     with open(args.processed_path, 'r') as f:
-
-        feature_vecs = []
-        labels = []
-        files = []
-        count_inst = {}
         print("Prepare Data")
         pbar = tqdm(total=47777)
         for line in f:
@@ -85,47 +81,56 @@ def visualize_pair_token(args):
                 pair_token = result["pairwise_tokens"][x // 2]
 
                 label_name = boxes_label_names[obj_id]
-                label_id = boxes_label[obj_id]
-                if label_name in filter_names: # filter_names_5000, filter_names_filtered
+
+                if label_name in filter_names_filtered:
+                    affordance = "-"
                     if telic_score > gib_score and telic_score > 0.2:
-                        label_name += "_t"
+                        affordance = "telic"
                     if gib_score > telic_score and gib_score > 0.2:
-                        label_name += "_g"
+                        affordance = "gibsonian"
 
-                    if label_name != "dog" and label_name[-1] == "t":
-                        # and (label_name[-1] == "g" or label_name[-1] == "t"):
-                        if label_name not in count_inst:
-                            count_inst[label_name] = 0
-                        count_inst[label_name] += 1
-                        if count_inst[label_name] < args.max_inst:
-                            feature_vecs.append(pair_token)
-                            labels.append(label_name)
-                            #labels.append(label_name[-1])
-                            files.append(filename)
-            #if len(files) > 500:
-            #    break
+                    data.append({"filename": filename, "object": label_name, "affordance": affordance,
+                                     "pair_token": pair_token})
 
-    print("Generate TSNE")
-    feature_vecs = np.array(feature_vecs)
-    
-    plt, df = visualize_embeddings(feature_vecs, labels, tool="tsne", title=f"UPT Pair Tokens TSNE Inst_{args.max_inst} 10 Objs Telic", ret_df=True)
+
+    instances = 500
+    subset = ["telic"]
+    df = pd.DataFrame.from_dict(data)
+
+    print(df.head())
+    df = df.sort_values(["object", "affordance"])
+
+    print("Select Affordannce Subset")
+    df = df.loc[df['affordance'].isin(subset)]
+    classes = len(set(df["object"]))
+
+    print("Concat and Group and SUbset Labels")
+    df["label"] = df["object"] + "_" + df["affordance"]
+    df = df.groupby("label").head(instances)
+
+    print("Select Vecs and Labels")
+    feature_vecs = df["pair_token"].tolist() #to
+    feature_vecs = np.asarray(feature_vecs)
+    print(feature_vecs)
+    labels = df["label"]
+
+    subsetname = "_".join(subset)
+
+    print("Visualize")
+    plt = visualize_embeddings(feature_vecs, labels, tool="tsne", title=f"UPT Pair Tokens TSNE {classes} Objects {subsetname}")
     plt.tight_layout()
-    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-    #plt.savefig(f"images_new/UPT Pair Tokens TSNE Inst_{args.max_inst} Gibs_Telic Label.png", bbox_inches='tight')
+    #plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    #plt.savefig(f"images_new/UPT Pair Tokens TSNE {classes} Classes Telic.png", bbox_inches='tight')
     plt.show()
-    df[['obj', 'affordance']] = df.y.str.split("_", expand=True)
-    df["filename"] = files
-    df.to_csv(f"images_new/pair_data/UPT Pair Tokens TSNE Inst_{args.max_inst} 10 Objs Telic.csv")
 
     print("Generate PACMAC")
-    plt, df = visualize_embeddings(feature_vecs, labels, tool="pacmap", title=f"UPT Pair Tokens PACMAC Inst_{args.max_inst} 10 Objs Telic", ret_df=True)
+    plt = visualize_embeddings(feature_vecs, labels, tool="pacmap", title=f"UPT Pair Tokens PACMAC {classes} Objects {subsetname}")
     plt.tight_layout()
-    plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-    #plt.savefig(f"images_new/UPT Pair Tokens PACMAC Inst_{args.max_inst} Gibs_Telic Label.png", bbox_inches='tight')
+    #plt.legend(bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
+    #plt.savefig(f"images_new/UPT Pair Tokens PACMAC {classes} Classes Telic", bbox_inches='tight')
     plt.show()
-    df[['obj', 'affordance']] = df.y.str.split("_", expand=True)
-    df["filename"] = files
-    df.to_csv(f"images_new/pair_data/UPT Pair Tokens PACMAC Inst_{args.max_inst} 10 Objs Telic.csv")
+
+
 
 
 if __name__ == "__main__":

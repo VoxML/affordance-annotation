@@ -173,6 +173,7 @@ class ModifiedEncoder(nn.Module):
             attn_weights.append(attn)
         return x, attn_weights
 
+
 class InteractionHead(nn.Module):
     """
     Interaction head that constructs and classifies box pairs
@@ -318,7 +319,7 @@ class InteractionHead(nn.Module):
                 labels = labels[perm]
                 unary_tokens = unary_tokens[perm]
             # Skip image when there are no valid human-object pairs
-            if n_h == 0 or n <= 1:
+            if n <= 1:
                 pairwise_tokens_collated.append(torch.zeros(
                     0, 2 * self.representation_size,
                     device=device)
@@ -336,9 +337,9 @@ class InteractionHead(nn.Module):
             )
             # Valid human-object pairs
             x_keep, y_keep = torch.nonzero(torch.logical_and(x != y, x < n_h)).unbind(1)
-            if len(x_keep) == 0:
+            #if len(x_keep) == 0:
                 # Should never happen, just to be safe
-                raise ValueError("There are no valid human-object pairs")
+            #    raise ValueError("There are no valid human-object pairs")
             x = x.flatten()
             y = y.flatten()
 
@@ -377,8 +378,10 @@ class InteractionHead(nn.Module):
             attn_maps_collated.append((unary_attn, pairwise_attn))
             unary_tokens_collated.append(unary_tokens)
 
-        pairwise_tokens_collated = torch.cat(pairwise_tokens_collated)
-        logits = self.box_pair_predictor(pairwise_tokens_collated)
+        #unary_tokens_collated = torch.cat(unary_tokens_collated)
+
+        pairwise_tokens_collated_cat = torch.cat(pairwise_tokens_collated)
+        logits = self.box_pair_predictor(pairwise_tokens_collated_cat)
 
         return logits, prior_collated, \
-            boxes_h_collated, boxes_o_collated, object_class_collated, attn_maps_collated, unary_tokens_collated
+            boxes_h_collated, boxes_o_collated, object_class_collated, attn_maps_collated, unary_tokens_collated, pairwise_tokens_collated

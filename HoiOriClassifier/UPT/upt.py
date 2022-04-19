@@ -165,22 +165,24 @@ class UPT(nn.Module):
 
         return region_props
 
-    def postprocessing(self, region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens):
+    def postprocessing(self, region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens, pairwise_tokens):
         n = [len(b) for b in bh]
         logits = logits.split(n)
 
         detections = []
-        for rp, h, o, lg, pr, obj, attn, size, unary_token in zip(
-            region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens
+        for rp, h, o, lg, pr, obj, attn, size, unary_token, pairwise_token in zip(
+            region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens, pairwise_tokens
         ):
             pr = pr.prod(0)
             x, y = torch.nonzero(pr).unbind(1)
             scores = torch.sigmoid(lg[x, y])
             detections.append(dict(
-                boxes=rp["boxes"], bscores=rp["scores"], bhs=rp["hidden_states"], unary_token=unary_token,
+                boxes=rp["boxes"], bscores=rp["scores"], bhs=rp["hidden_states"],
+                unary_token=unary_token, pairwise_tokens=pairwise_token,
                 pairing=torch.stack([h[x], o[x]]),
                 scores=scores * pr[x, y], labels=y,
-                objects=obj[x], attn_maps=attn, size=size, prior=pr
+                objects=obj[x], attn_maps=attn,
+                size=size, prior=pr
             ))
 
         return detections
@@ -235,16 +237,14 @@ class UPT(nn.Module):
         results = {'pred_logits': outputs_class, 'pred_boxes': outputs_coord}
 
         results = self.postprocessor(results, image_sizes)
-
         region_props = self.prepare_region_proposals(results, outputs)
-
-        logits, prior, bh, bo, objects, attn_maps, unary_tokens = self.interaction_head(
+        logits, prior, bh, bo, objects, attn_maps, unary_tokens, pairwise_tokens = self.interaction_head(
             src, image_sizes, region_props
         )
 
-        boxes = [r['boxes'] for r in region_props]
+        #boxes = [r['boxes'] for r in region_props]
 
-        detections = self.postprocessing(region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens)
+        detections = self.postprocessing(region_props, bh, bo, logits, prior, objects, attn_maps, image_sizes, unary_tokens, pairwise_tokens)
         return detections
 
 

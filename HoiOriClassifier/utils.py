@@ -9,7 +9,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
-def visualize_embeddings(X, Y, tool="tsne", title=""):
+def visualize_embeddings(X, Y, tool="tsne", title="", ret_feat=False, ret_df=False):
     model = None
     if tool == "tsne":
         model = TSNE(n_components=2, verbose=1, random_state=123)
@@ -18,19 +18,23 @@ def visualize_embeddings(X, Y, tool="tsne", title=""):
     else:
         print("Could not find", tool)
         exit()
-
+    print(X)
+    print(X.shape)
     Z = model.fit_transform(X)
 
     df = pd.DataFrame()
     df["y"] = Y
     df["comp-1"] = Z[:, 0]
     df["comp-2"] = Z[:, 1]
+    #df.sort_values(by="y", inplace=True)
 
     sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
                     #palette=sns.color_palette("Paired", 17), #husl, hls
                     data=df).set(title=title)
-    return plt
 
+    if ret_df:
+        return plt, df
+    return plt
 
 def get_rng_colors(count):
     colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(count)]
@@ -62,7 +66,10 @@ def ori_dict_to_vec(ori_dict):
 
 def resize_pad(im, dim):
     w, h = im.size
-    im = transforms.functional.resize(im, int(dim * min(w, h) / max(w, h)))
+    resize = int(dim * min(w, h) / max(w, h))
+    if resize < 2:
+        resize = 2
+    im = transforms.functional.resize(im, resize)
     left = int(np.ceil((dim - im.size[0]) / 2))
     right = int(np.floor((dim - im.size[0]) / 2))
     top = int(np.ceil((dim - im.size[1]) / 2))
