@@ -1,21 +1,292 @@
 import random
+import copy
 import numpy as np
 import torchvision.transforms as transforms
+from sklearn.manifold import TSNE
+import pacmap
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
+import hdbscan
+from sklearn.preprocessing import StandardScaler
+from sklearn import metrics
+
+
+def visualize_embeddings(df, tool="tsne", title="", ret_df=False, color_dict={}):
+    model = None
+    if tool == "tsne":
+        model = TSNE(n_components=2, random_state=123)
+    elif tool == "pacmap":
+        model = pacmap.PaCMAP(n_dims=2, random_state=123)
+    #else:W
+    #    print("Could not find", tool)
+    #    exit()
+
+
+    X = np.array(df["pair_token"].values.tolist())
+    #X = np.array(df["h_unary"].values.tolist())
+    Y = np.array(df["obj"].values.tolist())
+    #Y = np.array(df["label"].values.tolist())
+
+    Z = model.fit_transform(X)
+    df["comp-1"] = Z[:, 0]
+    df["comp-2"] = Z[:, 1]
+
+    dblabels, n_clusters = compute_dbscan(Z, Y)
+    df["dbscan"] = dblabels
+
+
+    #df["color"] = [color_dict[x] for x in df["y"]]
+    df.sort_values(by=["obj", "affordance"], inplace=True)
+    #df.sort_values(by="", inplace=True)
+    #df.sort_values(by="color", inplace=True, ascending=False)
+    #print(color)
+    sns.scatterplot(x="comp-1", y="comp-2", hue="obj", style="affordance", # "color", "obj"
+                    #palette=sns.color_palette("Paired", 17), #husl, hls
+                    data=df,
+                    sizes=(40, 400), alpha=.75
+                    #c="color"
+                    ).set(title=title)
+    """
+    plt.show()
+    
+    sns.scatterplot(x="comp-1", y="comp-2", hue="dbscan",
+                    palette=sns.color_palette("hls", n_clusters+1), #husl, hls
+                    data=df,
+                    sizes=(40, 400), alpha=.75
+                    #c="color"
+                    ).set(title=title)
+    """
+    if ret_df:
+        return plt, df
+    return plt
+
+
+def compute_dbscan(X, Y):
+
+    #Z = StandardScaler().fit_transform(X)
+    #db = DBSCAN(eps=0.05).fit(Z)
+    #labels = db.labels_
+
+    labels = hdbscan.HDBSCAN(min_cluster_size=50, max_cluster_size=1000).fit_predict(X)
+
+    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    n_noise_ = list(labels).count(-1)
+
+    #n_sil = metrics.silhouette_score(Z, labels)
+    n_hom = metrics.homogeneity_score(Y, labels)
+    n_completeness = metrics.completeness_score(Y, labels)
+    n_v_mes_score = metrics.v_measure_score(Y, labels)
+    n_adjust_rand_score = metrics.adjusted_rand_score(Y, labels)
+    n_mutual_info = metrics.adjusted_mutual_info_score(Y, labels)
+
+    print("Estimated number of clusters: %d" % n_clusters_)
+    print("Estimated number of noise points: %d" % n_noise_)
+
+    print("Homogeneity: %0.3f" % n_hom)
+    print("Completeness: %0.3f" % n_completeness)
+    print("V-measure: %0.3f" % n_v_mes_score)
+    print("Adjusted Rand Index: %0.3f" % n_adjust_rand_score)
+    print("Adjusted Mutual Information: %0.3f" % n_mutual_info)
+    #print("Silhouette Coefficient: %0.3f" % n_sil)
+
+    return labels, n_clusters_
 
 
 def get_rng_colors(count):
     colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(count)]
     return colors
 
+
+def ori_dict_to_vec(ori_dict):
+    vector = [0, 0, 0]
+    keys = ori_dict.keys()
+    if "n/a" in keys or len(keys) == 0:
+        return vector
+    elif "+x" in keys:
+        vector[0] = 1
+    elif "-x" in keys:
+        vector[0] = -1
+    elif "+y" in keys:
+        vector[1] = 1
+    elif "-y" in keys:
+        vector[1] = -1
+    elif "+z" in keys:
+        vector[2] = 1
+    elif "-z" in keys:
+        vector[2] = -1
+    else:
+        print(ori_dict)
+        print("!!!!!!!!!!!!!!!!!")
+    return vector
+
+
 def resize_pad(im, dim):
     w, h = im.size
-    im = transforms.functional.resize(im, int(dim * min(w, h) / max(w, h)))
+    resize = int(dim * min(w, h) / max(w, h))
+    if resize < 2:
+        resize = 2
+    im = transforms.functional.resize(im, resize)
     left = int(np.ceil((dim - im.size[0]) / 2))
     right = int(np.floor((dim - im.size[0]) / 2))
     top = int(np.ceil((dim - im.size[1]) / 2))
     bottom = int(np.floor((dim - im.size[1]) / 2))
     im = transforms.functional.pad(im, (left, top, right, bottom))
     return im
+
+
+def get_iou(bb1, bb2):
+    #print(bb1, bb2)
+    assert bb1['x1'] < bb1['x2']
+    assert bb1['y1'] < bb1['y2']
+    assert bb2['x1'] < bb2['x2']
+    assert bb2['y1'] < bb2['y2']
+
+    # determine the coordinates of the intersection rectangle
+    x_left = max(bb1['x1'], bb2['x1'])
+    y_top = max(bb1['y1'], bb2['y1'])
+    x_right = min(bb1['x2'], bb2['x2'])
+    y_bottom = min(bb1['y2'], bb2['y2'])
+
+    if x_right < x_left or y_bottom < y_top:
+        return 0.0
+
+    # The intersection of two axis-aligned bounding boxes is always an
+    # axis-aligned bounding box
+    intersection_area = (x_right - x_left) * (y_bottom - y_top)
+
+    # compute the area of both AABBs
+    bb1_area = (bb1['x2'] - bb1['x1']) * (bb1['y2'] - bb1['y1'])
+    bb2_area = (bb2['x2'] - bb2['x1']) * (bb2['y2'] - bb2['y1'])
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = intersection_area / float(bb1_area + bb2_area - intersection_area)
+    assert iou >= 0.0
+    assert iou <= 1.0
+    return iou
+
+
+def relative_orientations_old(up_vec, front_vec, h_up_vec, h_front_vec):
+    relative_up = np.zeros(3)
+    if np.array_equal(up_vec, relative_up) or np.array_equal(h_up_vec, relative_up) or np.array_equal(up_vec, h_up_vec):
+        relative_up[0] = 1
+    elif np.array_equal(np.negative(up_vec), h_up_vec):
+        relative_up[0] = -1
+    elif np.array_equal(up_vec, h_front_vec):
+        relative_up[1] = 1
+    elif np.array_equal(np.negative(up_vec), h_front_vec):
+        relative_up[1] = -1
+    else:
+        relative_up[2] = 1
+
+    relative_front = np.zeros(3)
+    if np.array_equal(front_vec, relative_front) or np.array_equal(h_front_vec, relative_front) or np.array_equal(
+            front_vec, h_front_vec):
+        relative_front[0] = 1
+    elif np.array_equal(np.negative(front_vec), h_front_vec):
+        relative_front[0] = -1
+    elif np.array_equal(front_vec, h_up_vec):
+        relative_front[1] = 1
+    elif np.array_equal(np.negative(front_vec), h_up_vec):
+        relative_front[1] = -1
+    else:
+        relative_front[2] = 1
+
+    return relative_up, relative_front
+
+
+def relative_orientations(up_vec, front_vec, h_up_vec, h_front_vec):
+    rot_mat = np.zeros((3,3))
+    rot_mat[1] = h_up_vec
+    rot_mat[2] = h_front_vec
+
+    h_left_vec = np.zeros(3)
+    if h_up_vec[0] == 0 and h_front_vec[0] == 0:
+        h_left_vec[0] = 1
+    elif h_up_vec[1] == 0 and h_front_vec[1] == 0:
+        h_left_vec[1] = 1
+    elif h_up_vec[2] == 0 and h_front_vec[2] == 0:
+        h_left_vec[2] = 1
+
+    # These are the special cases ...
+    if h_up_vec[1] == 1 and h_front_vec[0] == 1:
+        h_left_vec *= -1
+    elif h_up_vec[2] == 1 and h_front_vec[1] == 1:
+        h_left_vec *= -1
+    elif h_up_vec[0] == 1 and h_front_vec[2] == 1:
+        h_left_vec *= -1
+
+    if np.sum(h_up_vec) + np.sum(h_front_vec) == 0: # One is +1 the other -1
+        h_left_vec *= -1
+
+    rot_mat[0] = h_left_vec
+
+    return rot_mat.dot(up_vec), rot_mat.dot(front_vec)
+
+
+def merge_bboxes(annotation, object_names, verb_names, threshold=0.5):
+    """
+    Merges BBoxes between multiple Hois
+    :param annotation: json
+    :param threshold: float
+    :return: json; Merged Annotation with global bboxes
+    """
+    #annotation = copy.deepcopy(annotation)
+    human_bboxes = []  # List with merged human_bboxes.
+    object_bboxes = []  # List with merged object_bboxes.
+    object_labels = []
+    connections = []
+    connection_verbs = []
+
+
+    for h_bbox, o_bbox, obj, verb in zip(annotation["boxes_h"], annotation["boxes_o"], annotation["object"], annotation["verb"]):
+        human_id = -1
+        for ref_idx, ref_box in enumerate(human_bboxes):
+            iou = get_iou({"x1": h_bbox[0], "x2": h_bbox[2], "y1": h_bbox[1], "y2": h_bbox[3]}, {"x1": ref_box[0], "x2": ref_box[2], "y1": ref_box[1], "y2": ref_box[3]})
+            if iou > threshold:  # If intersection_over_union is over Threshold, Merge
+                human_id = ref_idx
+                break
+        if human_id < 0:
+            human_bboxes.append(h_bbox)
+            human_id = len(human_bboxes) - 1
+
+        obj_id = -1
+        for ref_idx, (ref_box, ref_box_lab) in enumerate(zip(object_bboxes, object_labels)):
+            iou = get_iou({"x1": o_bbox[0], "x2": o_bbox[2], "y1": o_bbox[1], "y2": o_bbox[3]}, {"x1": ref_box[0], "x2": ref_box[2], "y1": ref_box[1], "y2": ref_box[3]})
+            if iou > threshold and ref_box_lab == obj:  # If intersection_over_union is over Threshold, Merge
+                obj_id = ref_idx
+                break
+        if obj_id < 0:
+            object_bboxes.append(o_bbox)
+            object_labels.append(obj)
+            obj_id = len(object_bboxes) - 1
+
+        connections.append((human_id, obj_id))
+        connection_verbs.append(verb)
+
+    new_format_annotation = {}
+    new_format_annotation["human_bboxes"] = human_bboxes
+    new_format_annotation["object_bboxes"] = object_bboxes
+    new_format_annotation["object_labels"] = [object_names[x] for x in object_labels]
+    new_format_annotation["connections"] = connections
+    new_format_annotation["connection_verbs"] = [verb_names[x] for x in connection_verbs]
+
+    return new_format_annotation
+
+
+def ori_vec_to_binvec(vector):
+    bin_vec = [0, 0, 0]
+    if np.count_nonzero(vector) > 0:
+        vector_abs = np.abs(vector)
+        vector_amax = np.argmax(vector_abs)
+        if vector[vector_amax] > 0:
+            bin_vec[vector_amax] = 1
+        else:
+            bin_vec[vector_amax] = -1
+    return bin_vec
 
 
 colors = ["#000000", "#FF3300", "#4ade80", "#facc15", "#60a5fa", "#fb923c", "#c084fc", "#22d3ee", "#a3e635", "#663300",
