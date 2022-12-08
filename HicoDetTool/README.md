@@ -1,4 +1,4 @@
-# HICO-DET Tool
+# HICO-DET Tool -- deprecation --
 Used for visualization of Hico-Det data in combination with PoseContrast (https://github.com/YoungXIAO13/PoseContrast)
 Not necessary for the final work, but leave it here for now uas work reasons.
 
