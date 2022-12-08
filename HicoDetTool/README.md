@@ -1,5 +1,7 @@
-# HICO-DAT Tool
- 
+# HICO-DET Tool
+Used for visualization of Hico-Det data in combination with PoseContrast (https://github.com/YoungXIAO13/PoseContrast)
+Not necessary for the final work, but leave it here for now uas work reasons.
+
 ## Setup
 
 ### Python enviroment
@@ -25,7 +27,3 @@
 * https://hessenbox-a10.rz.uni-frankfurt.de/getlink/fi7NNa5DLocv3DcUy5HPd3Zz/poses.zip
 * In the config.ini can you referenz on the different pose datasets.
 * (Following models were used: Fast Pose (DUC) -	ResNet152 (MSCOCO), Fast Pose - ResNet50 (Halpe 26), Fast Pose - ResNet50 (Halpe 136))
-
-### Visualize Model Results
-* To use the HicoDetResultsVisualizer.py, download the following model and copy it under data/model.
-* ....
