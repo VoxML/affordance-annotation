@@ -17,3 +17,7 @@ HoiOriClassifier/results_hico_merge_2015.json
 HoiOriClassifier/hicodet_cut/*
 
 OriAffCheckClassify/.idea/*
+
+*.csv
+*.json
+*.json
