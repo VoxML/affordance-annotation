@@ -1,9 +1,13 @@
-# Habitat Extractor Tool
+# AffordanceUPT Visualitzer
  
 ## Info
 This project is heavily based on the following projects:
 * UPT: https://github.com/fredzzhang/upt?ref=pythonrepo.com
 * PoseContrast: https://github.com/YoungXIAO13/PoseContrast
+
+The scripts in this repository are used to visualize and explain the results of AffordanceUPT.
+
+Furthermore, the scripts for processing all images in a folder and for evaluating the AffordanceUPT results are located here. These will be documented at a later date.
 
 ## Setup
 
