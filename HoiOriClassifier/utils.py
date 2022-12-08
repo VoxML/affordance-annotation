@@ -7,34 +7,92 @@ import pacmap
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.cluster import DBSCAN
+import hdbscan
+from sklearn.preprocessing import StandardScaler
+from sklearn import metrics
 
 
-def visualize_embeddings(X, Y, tool="tsne", title="", ret_feat=False, ret_df=False):
+def visualize_embeddings(df, tool="tsne", title="", ret_df=False, color_dict={}):
     model = None
     if tool == "tsne":
-        model = TSNE(n_components=2, verbose=1, random_state=123)
+        model = TSNE(n_components=2, random_state=123)
     elif tool == "pacmap":
         model = pacmap.PaCMAP(n_dims=2, random_state=123)
-    else:
-        print("Could not find", tool)
-        exit()
-    print(X)
-    print(X.shape)
-    Z = model.fit_transform(X)
+    #else:W
+    #    print("Could not find", tool)
+    #    exit()
 
-    df = pd.DataFrame()
-    df["y"] = Y
+
+    X = np.array(df["pair_token"].values.tolist())
+    #X = np.array(df["h_unary"].values.tolist())
+    Y = np.array(df["obj"].values.tolist())
+    #Y = np.array(df["label"].values.tolist())
+
+    Z = model.fit_transform(X)
     df["comp-1"] = Z[:, 0]
     df["comp-2"] = Z[:, 1]
-    #df.sort_values(by="y", inplace=True)
 
-    sns.scatterplot(x="comp-1", y="comp-2", hue=df.y.tolist(),
+    dblabels, n_clusters = compute_dbscan(Z, Y)
+    df["dbscan"] = dblabels
+
+
+    #df["color"] = [color_dict[x] for x in df["y"]]
+    df.sort_values(by=["obj", "affordance"], inplace=True)
+    #df.sort_values(by="", inplace=True)
+    #df.sort_values(by="color", inplace=True, ascending=False)
+    #print(color)
+    sns.scatterplot(x="comp-1", y="comp-2", hue="obj", style="affordance", # "color", "obj"
                     #palette=sns.color_palette("Paired", 17), #husl, hls
-                    data=df).set(title=title)
-
+                    data=df,
+                    sizes=(40, 400), alpha=.75
+                    #c="color"
+                    ).set(title=title)
+    """
+    plt.show()
+    
+    sns.scatterplot(x="comp-1", y="comp-2", hue="dbscan",
+                    palette=sns.color_palette("hls", n_clusters+1), #husl, hls
+                    data=df,
+                    sizes=(40, 400), alpha=.75
+                    #c="color"
+                    ).set(title=title)
+    """
     if ret_df:
         return plt, df
     return plt
+
+
+def compute_dbscan(X, Y):
+
+    #Z = StandardScaler().fit_transform(X)
+    #db = DBSCAN(eps=0.05).fit(Z)
+    #labels = db.labels_
+
+    labels = hdbscan.HDBSCAN(min_cluster_size=50, max_cluster_size=1000).fit_predict(X)
+
+    n_clusters_ = len(set(labels)) - (1 if -1 in labels else 0)
+    n_noise_ = list(labels).count(-1)
+
+    #n_sil = metrics.silhouette_score(Z, labels)
+    n_hom = metrics.homogeneity_score(Y, labels)
+    n_completeness = metrics.completeness_score(Y, labels)
+    n_v_mes_score = metrics.v_measure_score(Y, labels)
+    n_adjust_rand_score = metrics.adjusted_rand_score(Y, labels)
+    n_mutual_info = metrics.adjusted_mutual_info_score(Y, labels)
+
+    print("Estimated number of clusters: %d" % n_clusters_)
+    print("Estimated number of noise points: %d" % n_noise_)
+
+    print("Homogeneity: %0.3f" % n_hom)
+    print("Completeness: %0.3f" % n_completeness)
+    print("V-measure: %0.3f" % n_v_mes_score)
+    print("Adjusted Rand Index: %0.3f" % n_adjust_rand_score)
+    print("Adjusted Mutual Information: %0.3f" % n_mutual_info)
+    #print("Silhouette Coefficient: %0.3f" % n_sil)
+
+    return labels, n_clusters_
+
 
 def get_rng_colors(count):
     colors = ["#"+''.join([random.choice('0123456789ABCDEF') for j in range(6)]) for i in range(count)]
@@ -79,6 +137,7 @@ def resize_pad(im, dim):
 
 
 def get_iou(bb1, bb2):
+    #print(bb1, bb2)
     assert bb1['x1'] < bb1['x2']
     assert bb1['y1'] < bb1['y2']
     assert bb2['x1'] < bb2['x2']

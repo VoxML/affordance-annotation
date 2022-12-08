@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import utils
+from sklearn.metrics import cohen_kappa_score
 import shutil
 plt.rcParams["figure.figsize"] = (20, 5)
 
@@ -15,8 +16,11 @@ from utils import get_iou, ori_dict_to_vec, merge_bboxes, id2label, ori_vec_to_b
 
 def create_heatmap(df: pd.DataFrame, title: str, subtitle: str = "", cmap="coolwarm", norm=None):
     df["sent"] = df.index
+
     df = pd.melt(df, id_vars=['sent'], var_name='target', value_name="score")
-    df = df.sort_values(by=["sent", "target"])
+    #df = df.sort_values(by=["sent", "target"])
+    df = df.sort_values(by=["sent"])
+    df.rename(columns={"sent": "Objects", "target": "Orientation"}, inplace=True)
 
     if norm is None:
         scoremax = df["score"].max()
@@ -28,13 +32,13 @@ def create_heatmap(df: pd.DataFrame, title: str, subtitle: str = "", cmap="coolw
     #plt.figure(1, figsize=(6, 12))
     plt.figure(1, figsize=(8, 16))
 
-    ax = sns.scatterplot(x="target", y="sent",
+    ax = sns.scatterplot(x="Orientation", y="Objects",
                          hue="score", size="score",
                          hue_norm=(scoremin, scoremax), #size_norm=(0, 1),
                          palette=cmap, sizes=(0, 90),
                          marker="s", linewidth=0, legend=False,
                          data=df)
-
+    ax.figure.axes[0].invert_xaxis()
     norm = plt.Normalize(scoremin, scoremax)
     sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
     ax.figure.colorbar(sm)
@@ -66,7 +70,7 @@ H is the hatch used for identification of the different dataframe"""
                       ax=axe,
                       legend=False,
                       grid=False,
-                      color=[color_dict.get(x) for x in df.columns],
+                      #color=[color_dict.get(x) for x in df.columns],
                       **kwargs)  # make bar plots
 
     h, l = axe.get_legend_handles_labels()  # get the handles we want to modify
@@ -78,18 +82,18 @@ H is the hatch used for identification of the different dataframe"""
                 rect.set_width(1 / float(n_df + 1))
 
     axe.set_xticks((np.arange(0, 2 * n_ind, 2) + 1 / float(n_df + 1)) / 2.)
-    axe.set_xticklabels(dfall[0].index, rotation=90)
+    axe.set_xticklabels(dfall[0].index)#, rotation=90)
     axe.set_title(title)
 
     # Add invisible data to add another legend
     n = []
     for i in range(n_df):
-        n.append(axe.bar(0, 0, color="gray", hatch=H * i))
+        n.append(axe.bar(0, 0, color="gray", hatch=H * i * 2))
 
-    l1 = axe.legend(h[:n_col], l[:n_col], loc=[1.01, 0.5])
+    l1 = axe.legend(h[:n_col], l[:n_col], loc=[1.01, 0.15])
     axe.add_artist(l1)
     if labels is not None:
-        l2 = plt.legend(n, labels, loc=[1.01, 0.1])
+        l2 = plt.legend(n, labels, loc=[1.01, 0.00])
 
     return axe
 
@@ -430,6 +434,56 @@ def merge_everything(config):
     print(error_count)
     return {"annotations": merged_results, "objects": object_names, "verbs": verb_names}
 
+
+def generate_anno_hoi_vs_auto_hoi_iaa(annos, object_names, config):
+    #object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "umbrella"]
+
+    hoi_annotation = {}  # {obj#verb: T/G/-} (string)
+    with open(os.path.join(config.hicodet_path, "HOI.txt")) as file:
+        for line in file:
+            splitline = line.split()
+            if len(splitline) > 3:
+                if splitline[3] == "T":
+                    hoi_annotation[(splitline[1], splitline[2])] = "telic"
+                elif splitline[3] == "G":
+                    hoi_annotation[(splitline[1], splitline[2])] = "gibsonian"
+
+    annotator1 = []
+    annotator2 = []
+    anno_map = {"T": "telic", "G": "gibsonian", "G pot. T": "gibsonian"}
+
+    for anno_file, anno in annos["annotations"].items():
+        if "annotated_connections" in anno:
+            merged_auto_hois = {}
+            for connection, verb in zip(anno["connections"], anno["connection_verbs"]):
+                obj = anno["object_labels"][connection[1]]
+                if (obj, verb) not in hoi_annotation:
+                    continue
+                if connection in merged_auto_hois and merged_auto_hois[connection] != "telic":
+                    merged_auto_hois[connection] = hoi_annotation[(obj, verb)]
+                elif connection not in merged_auto_hois:
+                    merged_auto_hois[connection] = hoi_annotation[(obj, verb)]
+
+            merged_anno_hois = {}
+            for connection, verb in zip(anno["annotated_connections"], anno["annotated_affordances"]):
+                if verb == "None":
+                    continue
+                if connection in merged_anno_hois:
+                    if merged_anno_hois[connection] == "gibsonian":
+                        merged_anno_hois[connection] = anno_map[verb]
+                    elif merged_anno_hois[connection] == "gibs / telic" and anno_map[verb] == "telic":
+                        merged_anno_hois[connection] = anno_map[verb]
+                elif connection not in merged_anno_hois:
+                    merged_anno_hois[connection] = anno_map[verb]
+
+            for anno_conntection, hoi in merged_anno_hois.items():
+                obj = anno["object_labels"][anno_conntection[1]]
+                if anno_conntection in merged_auto_hois and obj in object_names:
+                    annotator1.append(hoi)
+                    annotator2.append(merged_auto_hois[anno_conntection])
+
+    return annotator1, annotator2
+
 def generate_anno_hoi_vs_auto_hoi(annos, config):
     object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "umbrella"]
 
@@ -443,9 +497,9 @@ def generate_anno_hoi_vs_auto_hoi(annos, config):
                 elif splitline[3] == "G":
                     hoi_annotation[(splitline[1], splitline[2])] = "gibsonian"
 
-    auto_gibs_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "gibs / telic", "telic"])
-    auto_telic_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "gibs / telic", "telic"])
-    anno_map = {"T": "telic", "G": "gibsonian", "G pot. T": "gibs / telic"}
+    auto_gibs_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "telic"])
+    auto_telic_df = pd.DataFrame(0, index=object_names, columns=["gibsonian", "telic"])
+    anno_map = {"T": "telic", "G": "gibsonian", "G pot. T": "gibsonian"}
 
     for anno_file, anno in annos["annotations"].items():
         if "annotated_connections" in anno:
@@ -557,6 +611,8 @@ def Hoi_vs_AnnoOri(annos, config, auto=False, ori="up"):
 
 def AnnoHoi_vs_AnnoOri(annos, config, merge_pot, relative=True):
     object_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
+    #object_names = ["bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "person", "umbrella"]
+
     hoi_annotation = {}  # {obj#verb: T/G/-} (string)
     with open(os.path.join(config.hicodet_path, "HOI.txt")) as file:
         for line in file:
@@ -910,11 +966,25 @@ def objectnet3d_data_visual():
 
 ####################################################################################
 
+def generate_browsable_csv(config):
+    merged_hicodet = merge_everything(config)
+    csv_data = []
+    for anno_file, anno in tqdm(merged_hicodet["annotations"].items()):
+        #print("==============================")
+        #print(anno)
+        for connection, verb in zip(anno["connections"], anno["connection_verbs"]):
+            #print(connection)
+            obj_name = anno["object_labels"][connection[1]]
+            csv_data.append({"file": anno_file, "obj": obj_name, "verb": verb})
+    df = pd.DataFrame.from_dict(csv_data)
+    df.to_csv("HicoDetData.csv")
+    exit()
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--hicodet_path', default="D:/Corpora/HICO-DET", type=str)
-    parser.add_argument('--processed_path', default='results_hico_merge_2015_v2.json', type=str)
+    parser.add_argument('--processed_path', default='results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_lines.json', type=str)
     parsed_args = parser.parse_args()
 
     """
@@ -936,17 +1006,35 @@ if __name__ == "__main__":
                                      ['gibsonian_score', 'telic_score'])
     plt.title("UPT HOI Scores")
     plt.tight_layout()
-    plt.savefig("images/UPT HOI Scores.png")
+    plt.savefig("images_final/UPT HOI Scores_200.png", dpi=200)
     plt.show()
     """
 
+
+    merged_hicodet = merge_everything(parsed_args)
+    obj_names = ["apple", "bicycle", "bottle", "car", "chair", "cup", "dog", "horse", "knife", "umbrella"]
+    for name in obj_names:
+        print(name)
+        annotation1, annotation2 = generate_anno_hoi_vs_auto_hoi_iaa(merged_hicodet, [name] ,parsed_args)
+        #print(annotation1)
+        #print(annotation2)
+
+        score = cohen_kappa_score(annotation1, annotation2)
+        print(score)
+    print("Total")
+    annotation1, annotation2 = generate_anno_hoi_vs_auto_hoi_iaa(merged_hicodet, obj_names, parsed_args)
+    score = cohen_kappa_score(annotation1, annotation2)
+    print(score)
+    exit()
     """
     merged_hicodet = merge_everything(parsed_args)
     auto_gibs_df, auto_telic_df = generate_anno_hoi_vs_auto_hoi(merged_hicodet, parsed_args)
-    graph = generate_matplot_graph([auto_gibs_df, auto_telic_df], ["auto_gibs", "auto_telic"])
+    auto_gibs_df.rename(columns={"telic": "image_telic", "gibsonian": "image_gibsonian"}, inplace=True)
+    auto_telic_df.rename(columns={"telic": "image_telic", "gibsonian": "image_gibsonian"}, inplace=True)
+    graph = generate_matplot_graph([auto_gibs_df, auto_telic_df], ["text_gibsonain", "text_telic"])
     plt.tight_layout()
     plt.title("Auto Affordance vs Anno Affordance")
-    plt.savefig("images/Auto Hoi vs Anno Hoi.png")
+    plt.savefig("images_final/Text Hoi vs Image Hoi_100.png", dpi=100)
     plt.show()
     """
 
@@ -1038,10 +1126,11 @@ if __name__ == "__main__":
     plt.show()
     """
 
+
     """
     merge_pot = True
     relative = True
-    #all_oris = set()
+
     all_oris = []
     merged_hicodet = merge_everything(parsed_args)
     anno_dfs = AnnoHoi_vs_AnnoOri(merged_hicodet, parsed_args, merge_pot, relative=relative)
@@ -1049,7 +1138,7 @@ if __name__ == "__main__":
         ori_sum = 0
         for df in list(anno_dfs.values()):
             ori_sum += df.loc[:, ori].sum()
-        if ori_sum < 5:
+        if ori_sum < 10:
             for df in list(anno_dfs.values()):
                 df.drop(ori, axis=1, inplace=True)
         else:
@@ -1057,6 +1146,7 @@ if __name__ == "__main__":
             if ori not in all_oris:
                 all_oris.append(ori)
 
+    '''
     filter = True #Same Objects as Annotation
     model_dfs = ModelHoi_vs_ModelOri(parsed_args, filter, relative=relative)
     for ori in list(model_dfs.values())[0].head():
@@ -1070,7 +1160,7 @@ if __name__ == "__main__":
             #all_oris.add(ori)
             if ori not in all_oris:
                 all_oris.append(ori)
-
+    '''
     colors = sns.color_palette("Paired", n_colors=len(all_oris))  # Set3, Paired
     color_dict = {}
     #for ori, c in zip(sorted(list(all_oris)), colors):
@@ -1078,26 +1168,36 @@ if __name__ == "__main__":
         color_dict[ori] = c
 
 
-    #graph = generate_matplot_graph(list(anno_dfs.values()), list(anno_dfs.keys()), sort_vals=True, color_dict=color_dict)
-    #plt.tight_layout()
-    #plt.title(f"Anno Relative_{relative} Orientation vs Anno Affordance")
-    #plt.savefig(f"images_new/Anno Relative_{relative} Orientation vs Anno Affordance.png", bbox_inches='tight')
-    #plt.show()
-
-
-    graph = generate_matplot_graph(list(model_dfs.values()), ["gibs", "telic"], sort_vals=True, color_dict=color_dict)
+    graph = generate_matplot_graph(list(anno_dfs.values()), list(anno_dfs.keys()), sort_vals=True, color_dict=color_dict)
     plt.tight_layout()
-    plt.title(f"Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All")
-    plt.savefig(f"images_new/Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All.png", bbox_inches='tight')
+    plt.title(f"Anno Relative_{relative} Orientation vs Anno Affordance")
+    plt.xticks(rotation=0, fontsize=12)
+    #plt.xlabel("objects", fontsize=20)
+    plt.savefig(f"images_final/habitat/Anno Relative_{relative} Orientation vs Anno Affordance.png", bbox_inches='tight', dpi=400)
     plt.show()
     """
 
+
+
+
+    """
+    graph = generate_matplot_graph(list(model_dfs.values()), ["gibs", "telic"], sort_vals=True, color_dict=color_dict)
+    plt.tight_layout()
+    plt.title(f"Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All")
+    plt.savefig(f"images_final/habitat/Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All.png", bbox_inches='tight')
+    plt.show()
+    """
+
+    """
     df = objectnet3d_data_visual()
     graph = create_heatmap(df, "Object3D Dataset", cmap="flare")
     plt.tight_layout()
     #plt.title(f"Pred Relative_{relative} vs Pred Affordance - filtered {filter} - All")
-    plt.savefig(f"images_new/ObjectNet3D Dist.png", bbox_inches='tight')
+    plt.savefig(f"images_final/ObjectNet3D Dist_100.png", bbox_inches='tight', dpi=100)
     plt.show()
+    """
+
+    #generate_browsable_csv(parsed_args)
 
 
 

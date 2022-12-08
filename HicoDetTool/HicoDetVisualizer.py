@@ -3,6 +3,7 @@ import json
 import os.path
 import numpy as np
 import torch
+from PIL import Image
 
 from utils.alphapose import vis_frame
 
@@ -57,7 +58,9 @@ class Visualizer:
             exit()
         image_path_postfix = data["image_path_postfix"]
         full_image_path = os.path.join(self.config["HICODET"]["hico_images"], image_path_postfix)
-        img = mpimg.imread(full_image_path)
+
+        img = Image.open(full_image_path).convert('RGB')
+        #img = mpimg.imread(full_image_path)
 
         if self.poselist is not None:
             img = self.add_pose(img, data["image_path_postfix"])
@@ -133,7 +136,7 @@ if __name__ == '__main__':
 
     visualizer = Visualizer(configp)
     #visualizer.show_image(0, show=False, save=True)
-    visualizer.show_image("HICO_test2015_00000005", show=True, save=False)
+    visualizer.show_image("HICO_test2015_00000004", show=True, save=False)
     exit()
     #for id, datain in enumerate(visualizer.anno[0:]):
     #    for data in datain["hois"]:

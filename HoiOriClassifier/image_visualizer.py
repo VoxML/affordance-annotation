@@ -191,10 +191,12 @@ if __name__ == "__main__":
 
     parser.add_argument('--device', default=0, type=int)
 
-    parser.add_argument('--box_score_thresh', default=0.9, type=int)
+    parser.add_argument('--box_score_thresh', default=0.8, type=int)
     parser.add_argument('--hoi_score_thresh', default=0.2, type=int)
 
-    parser.add_argument('--hoi_model', default="data/models/robust-sweep-8_ckpt_41940_20.pt", type=str)
+    #parser.add_argument('--hoi_model', default="data/models/robust-sweep-8_ckpt_41940_20.pt", type=str)
+    parser.add_argument('--hoi_model', default="data/models/anno-v2_telic-intent_ckpt_41980_20_Mod_v2.pt", type=str)
+
     parser.add_argument('--pose_model', default="data/models/pose-model.pth", type=str)
 
     parsed_args = parser.parse_args()
