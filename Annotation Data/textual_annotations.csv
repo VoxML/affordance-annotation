@@ -1,0 +1,601 @@
+﻿;;;Given;Given
+1;airplane;board;T;T
+2;airplane;direct;;
+3;airplane;exit;T;T
+4;airplane;fly;T;T
+5;airplane;inspect;T;T
+6;airplane;load;G;G
+7;airplane;ride;T;T
+8;airplane;sit_on;G;G
+9;airplane;wash;G;G
+10;airplane;no_interaction;;
+11;bicycle;carry;G;G
+12;bicycle;hold;G;G
+13;bicycle;inspect;T;T
+14;bicycle;jump;G;G
+15;bicycle;hop_on;G;G
+16;bicycle;park;T;T
+17;bicycle;push;G;G
+18;bicycle;repair;T;T
+19;bicycle;ride;T;T
+20;bicycle;sit_on;G;G
+21;bicycle;straddle;G;G
+22;bicycle;walk;G;G
+23;bicycle;wash;G;G
+24;bicycle;no_interaction;;
+25;bird;chase;G;G
+26;bird;feed;T;T
+27;bird;hold;G;G
+28;bird;pet;G;G
+29;bird;release;;
+30;bird;watch;G;G
+31;bird;no_interaction;;
+32;boat;board;G;G
+33;boat;drive;T;T
+34;boat;exit;G;G
+35;boat;inspect;T;T
+36;boat;jump;G;G
+37;boat;launch;T;T
+38;boat;repair;T;T
+39;boat;ride;T;T
+40;boat;row          ;T;T
+41;boat;sail;T;T
+42;boat;sit_on;G;G
+43;boat;stand_on    ;G;G
+44;boat;tie;T;T
+45;boat;wash;G;G
+46;boat;no_interaction;;
+47;bottle;carry;G;G
+48;bottle;drink_with;T;T
+49;bottle;hold;G;G
+50;bottle;inspect;T;T
+51;bottle;lick;G;G
+52;bottle;open;T;T
+53;bottle;pour;G;G
+54;bottle;no_interaction;;
+55;bus;board;G;G
+56;bus;direct;T;T
+57;bus;drive;T;T
+58;bus;exit;G;G
+59;bus;inspect;T;T
+60;bus;load;T;T
+61;bus;ride;T;T
+62;bus;sit_on;G;G
+63;bus;wash;G;G
+64;bus;wave;T;T
+65;bus;no_interaction;;
+66;car;board;G;G
+67;car;direct;T;T
+68;car;drive;T;T
+69;car;hose;T;T
+70;car;inspect;T;T
+71;car;jump;G;G
+72;car;load;T;T
+73;car;park;T;T
+74;car;ride;T;T
+75;car;wash;G;G
+76;car;no_interaction;;
+77;cat;dry;G;G
+78;cat;feed;T;T
+79;cat;hold;G;G
+80;cat;hug;G;G
+81;cat;kiss;G;G
+82;cat;pet;G;G
+83;cat;scratch;G;G
+84;cat;wash;G;G
+85;cat;chase;G;G
+86;cat;no_interaction;;
+87;chair;carry;G;G
+88;chair;hold;G;G
+89;chair;lie_on;G;G
+90;chair;sit_on;G;G
+91;chair;stand_on     ;G;G
+92;chair;no_interaction;;
+93;couch;carry;G;G
+94;couch;lie_on;G;G
+95;couch;sit_on;G;G
+96;couch;no_interaction;;
+97;cow;feed;T;T
+98;cow;herd;T;T
+99;cow;hold;G;G
+100;cow;hug;G;G
+101;cow;kiss;G;G
+102;cow;lasso;G;G
+103;cow;milk;T;T
+104;cow;pet;G;G
+105;cow;ride;T;T
+106;cow;walk;G;G
+107;cow;no_interaction;;
+108;dining_table;clean       ;T;T
+109;dining_table;eat_at       ;T;T
+110;dining_table;sit_at;G;G
+111;dining_table;no_interaction;;
+112;dog;carry;G;G
+113;dog;dry;G;G
+114;dog;feed;T;T
+115;dog;groom        ;T;T
+116;dog;hold;G;G
+117;dog;hose;G;G
+118;dog;hug;G;G
+119;dog;inspect;T;T
+120;dog;kiss;G;G
+121;dog;pet;G;G
+122;dog;run;G;G
+123;dog;scratch;G;G
+124;dog;straddle;G;G
+125;dog;train;T;T
+126;dog;walk;G;G
+127;dog;wash;G;G
+128;dog;chase;G;G
+129;dog;no_interaction;;
+130;horse;feed;T;T
+131;horse;groom        ;T;T
+132;horse;hold;G;G
+133;horse;hug;G;G
+134;horse;jump;G;G
+135;horse;kiss;G;G
+136;horse;load;T;T
+137;horse;hop_on       ;G;G
+138;horse;pet;G;G
+139;horse;race;T;T
+140;horse;ride;T;T
+141;horse;run;G;G
+142;horse;straddle     ;G;G
+143;horse;train;T;T
+144;horse;walk;G;G
+145;horse;wash;G;G
+146;horse;no_interaction;;
+147;motorcycle;hold         ;G;G
+148;motorcycle;inspect      ;T;T
+149;motorcycle;jump;G;G
+150;motorcycle;hop_on;G;G
+151;motorcycle;park;T;T
+152;motorcycle;push;G;G
+153;motorcycle;race;T;T
+154;motorcycle;ride;T;T
+155;motorcycle;sit_on;G;G
+156;motorcycle;straddle;G;G
+157;motorcycle;turn;G;G
+158;motorcycle;walk;G;G
+159;motorcycle;wash;G;G
+160;motorcycle;no_interaction;;
+161;person;carry;G;G
+162;person;greet        ;T;T
+163;person;hold        ;G;G
+164;person;hug          ;G;G
+165;person;kiss;G;G
+166;person;stab;G;G
+167;person;tag;T;T
+168;person;teach;T;T
+169;person;lick;G;G
+170;person;no_interaction;;
+171;potted_plant;carry       ;G;G
+172;potted_plant;hold;G;G
+173;potted_plant;hose;G;G
+174;potted_plant;no_interaction;;
+175;sheep;carry;G;G
+176;sheep;feed      ;G;G
+177;sheep;herd   ;T;T
+178;sheep;hold    ;G;G
+179;sheep;hug    ;G;G
+180;sheep;kiss  ;G;G
+181;sheep;pet  ;G;G
+182;sheep;ride   ;T;T
+183;sheep;shear   ;T;T
+184;sheep;walk    ;G;G
+185;sheep;wash        ;G;G
+186;sheep;no_interaction;;
+187;train;board       ;G;G
+188;train;drive        ;T;T
+189;train;exit   ;G;G
+190;train;load   ;T;T
+191;train;ride      ;T;T
+192;train;sit_on;G;G
+193;train;wash      ;G;G
+194;train;no_interaction;;
+195;tv;control    ;T;T
+196;tv;repair      ;T;T
+197;tv;watch      ;T;T
+198;tv;no_interaction;;
+199;apple;buy     ;T;T
+200;apple;cut       ;G;G
+201;apple;eat   ;T;T
+202;apple;hold    ;G;G
+203;apple;inspect;;
+204;apple;peel     ;T;T
+205;apple;pick;G;G
+206;apple;smell  ;G;G
+207;apple;wash     ;G;G
+208;apple;no_interaction;;
+209;backpack;carry       ;G;G
+210;backpack;hold       ;G;G
+211;backpack;inspect     ;T;T
+212;backpack;open       ;T;T
+213;backpack;wear         ;T;T
+214;backpack;no_interaction;;
+215;banana;buy;T;T
+216;banana;carry;G;G
+217;banana;cut;G;G
+218;banana;eat;T;T
+219;banana;hold;G;G
+220;banana;inspect;T;T
+221;banana;peel;T;T
+222;banana;pick;G;G
+223;banana;smell;G;G
+224;banana;no_interaction;;
+225;baseball_bat;break        ;G;G
+226;baseball_bat;carry;G;G
+227;baseball_bat;hold;G;G
+228;baseball_bat;sign;T;T
+229;baseball_bat;swing;T;T
+230;baseball_bat;throw;G;G
+231;baseball_bat;wield;T;T
+232;baseball_bat;no_interaction;;
+233;baseball_glove;hold;G;G
+234;baseball_glove;wear;T;T
+235;baseball_glove;no_interaction;;
+236;bear;feed;T;T
+237;bear;hunt;T;T
+238;bear;watch;G;G
+239;bear;no_interaction;;
+240;bed;clean;T;T
+241;bed;lie_on;G;G
+242;bed;sit_on;G;G
+243;bed;no_interaction;;
+244;bench;inspect      ;T;T
+245;bench;lie_on;G;G
+246;bench;sit_on;G;G
+247;bench;no_interaction;;
+248;book;carry;G;G
+249;book;hold;G;G
+250;book;open;T;T
+251;book;read;T;T
+252;book;no_interaction;;
+253;bowl;hold;G;G
+254;bowl;stir;T;T
+255;bowl;wash         ;G;G
+256;bowl;lick;G;G
+257;bowl;no_interaction;;
+258;broccoli;cut;G;G
+259;broccoli;eat;T;T
+260;broccoli;hold;G;G
+261;broccoli;smell;G;G
+262;broccoli;stir;T;T
+263;broccoli;wash         ;G;G
+264;broccoli;no_interaction;;
+265;cake;blow;T;T
+266;cake;carry;G;G
+267;cake;cut;G;G
+268;cake;eat;T;T
+269;cake;hold;G;G
+270;cake;light;T;T
+271;cake;make         ;T;T
+272;cake;pick_up;G;G
+273;cake;no_interaction;;
+274;carrot;carry;G;G
+275;carrot;cook;T;T
+276;carrot;cut;G;G
+277;carrot;eat;T;T
+278;carrot;hold;G;G
+279;carrot;peel;T;T
+280;carrot;smell;G;G
+281;carrot;stir;T;T
+282;carrot;wash         ;G;G
+283;carrot;no_interaction;;
+284;cell_phone;carry       ;G;G
+285;cell_phone;hold;G;G
+286;cell_phone;read;T;T
+287;cell_phone;repair;T;T
+288;cell_phone;talk_on;T;T
+289;cell_phone;text_on;T;T
+290;cell_phone;no_interaction;;
+291;clock;check       ;T;T
+292;clock;hold;G;G
+293;clock;repair;T;T
+294;clock;set;T;T
+295;clock;no_interaction;;
+296;cup;carry;G;G
+297;cup;drink_with  ;T;T
+298;cup;hold;G;G
+299;cup;inspect;T;T
+300;cup;pour;G;G
+301;cup;sip;T;T
+302;cup;smell;G;G
+303;cup;fill;T;T
+304;cup;wash;G;G
+305;cup;no_interaction;;
+306;donut;buy          ;T;T
+307;donut;carry;G;G
+308;donut;eat;T;T
+309;donut;hold;G;G
+310;donut;make;T;T
+311;donut;pick_up;G;G
+312;donut;smell;G;G
+313;donut;no_interaction;;
+314;elephant;feed;T;T
+315;elephant;hold;G;G
+316;elephant;hose;G;G
+317;elephant;hug;G;G
+318;elephant;kiss;G;G
+319;elephant;hop_on       ;G;G
+320;elephant;pet;G;G
+321;elephant;ride;G;G
+322;elephant;walk;G;G
+323;elephant;wash;G;G
+324;elephant;watch;G;G
+325;elephant;no_interaction;;
+326;fire_hydrant;hug;G;G
+327;fire_hydrant;inspect;T;T
+328;fire_hydrant;open;T;T
+329;fire_hydrant;paint;T;T
+330;fire_hydrant;no_interaction;;
+331;fork;hold;G;G
+332;fork;lift;G;G
+333;fork;stick;G;G
+334;fork;lick;G;G
+335;fork;wash;G;G
+336;fork;no_interaction;;
+337;frisbee;block;T;T
+338;frisbee;catch;G;G
+339;frisbee;hold;G;G
+340;frisbee;spin;G;G
+341;frisbee;throw;G;G
+342;frisbee;no_interaction;;
+343;giraffe;feed;T;T
+344;giraffe;kiss;G;G
+345;giraffe;pet;G;G
+346;giraffe;ride;T;T
+347;giraffe;watch        ;G;G
+348;giraffe;no_interaction;;
+349;hair_drier;hold;G;G
+350;hair_drier;operate;T;T
+351;hair_drier;repair;T;T
+352;hair_drier;no_interaction;;
+353;handbag;carry;G;G
+354;handbag;hold;G;G
+355;handbag;inspect;T;T
+356;handbag;no_interaction;;
+357;hot_dog;carry;G;G
+358;hot_dog;cook;T;T
+359;hot_dog;cut;G;G
+360;hot_dog;eat;T;T
+361;hot_dog;hold;G;G
+362;hot_dog;make;T;T
+363;hot_dog;no_interaction;;
+364;keyboard;carry;G;G
+365;keyboard;clean;T;T
+366;keyboard;hold;G;G
+367;keyboard;type_on      ;T;T
+368;keyboard;no_interaction;;
+369;kite;assemble;T;T
+370;kite;carry;G;G
+371;kite;fly;T;T
+372;kite;hold;G;G
+373;kite;inspect;T;T
+374;kite;launch;T;T
+375;kite;pull;G;G
+376;kite;no_interaction;;
+377;knife;cut_with   ;T;T
+378;knife;hold;G;G
+379;knife;stick;G;G
+380;knife;wash;G;G
+381;knife;wield;T;T
+382;knife;lick;G;G
+383;knife;no_interaction;;
+384;laptop;hold;G;G
+385;laptop;open;T;T
+386;laptop;read;T;T
+387;laptop;repair;T;T
+388;laptop;type_on      ;T;T
+389;laptop;no_interaction;;
+390;microwave;clean        ;T;T
+391;microwave;open;T;T
+392;microwave;operate;T;T
+393;microwave;no_interaction;;
+394;mouse;control;T;T
+395;mouse;hold;G;G
+396;mouse;repair;T;T
+397;mouse;no_interaction;;
+398;orange;buy;T;T
+399;orange;cut;G;G
+400;orange;eat;T;T
+401;orange;hold;G;G
+402;orange;inspect;T;T
+403;orange;peel;G;G
+404;orange;pick;G;G
+405;orange;squeeze      ;G;G
+406;orange;wash;G;G
+407;orange;no_interaction;;
+408;oven;clean;T;T
+409;oven;hold;G;G
+410;oven;inspect;T;T
+411;oven;open;T;T
+412;oven;repair;T;T
+413;oven;operate;T;T
+414;oven;no_interaction;;
+415;parking_meter;check     ;T;T
+416;parking_meter;pay          ;T;T
+417;parking_meter;repair;T;T
+418;parking_meter;no_interaction;;
+419;pizza;buy;T;T
+420;pizza;carry;G;G
+421;pizza;cook;T;T
+422;pizza;cut;G;G
+423;pizza;eat;T;T
+424;pizza;hold;G;G
+425;pizza;make;T;T
+426;pizza;pick_up;T;T
+427;pizza;slide;G;G
+428;pizza;smell;G;G
+429;pizza;no_interaction;;
+430;refrigerator;clean;T;T
+431;refrigerator;hold;G;G
+432;refrigerator;move;G;G
+433;refrigerator;open;T;T
+434;refrigerator;no_interaction;;
+435;remote;hold;G;G
+436;remote;point;G;G
+437;remote;swing;G;G
+438;remote;no_interaction;;
+439;sandwich;carry;G;G
+440;sandwich;cook;T;T
+441;sandwich;cut;G;G
+442;sandwich;eat;T;T
+443;sandwich;hold;G;G
+444;sandwich;make;T;T
+445;sandwich;no_interaction;;
+446;scissors;cut_with;T;T
+447;scissors;hold;G;G
+448;scissors;open;T;T
+449;scissors;no_interaction;;
+450;sink;clean;T;T
+451;sink;repair;T;T
+452;sink;wash;G;G
+453;sink;no_interaction;;
+454;skateboard;carry       ;G;G
+455;skateboard;flip;G;G
+456;skateboard;grind;T;T
+457;skateboard;hold;G;G
+458;skateboard;jump;G;G
+459;skateboard;pick_up;G;G
+460;skateboard;ride;T;T
+461;skateboard;sit_on;G;G
+462;skateboard;stand_on     ;G;G
+463;skateboard;no_interaction;;
+464;skis;adjust;T;T
+465;skis;carry;G;G
+466;skis;hold;G;G
+467;skis;inspect;T;T
+468;skis;jump;G;G
+469;skis;pick_up;G;G
+470;skis;repair;T;T
+471;skis;ride;T;T
+472;skis;stand_on   ;G;G
+473;skis;wear;T;T
+474;skis;no_interaction;;
+475;snowboard;adjust   ;T;T
+476;snowboard;carry       ;G;G
+477;snowboard;grind        ;T;T
+478;snowboard;hold;G;G
+479;snowboard;jump;G;G
+480;snowboard;ride;T;T
+481;snowboard;stand_on   ;G;G
+482;snowboard;wear;T;T
+483;snowboard;no_interaction;;
+484;spoon;hold;G;G
+485;spoon;lick;G;G
+486;spoon;wash;G;G
+487;spoon;sip;T;T
+488;spoon;no_interaction;;
+489;sports_ball;block       ;T;T
+490;sports_ball;carry;G;G
+491;sports_ball;catch;G;G
+492;sports_ball;dribble;G;G
+493;sports_ball;hit;G;G
+494;sports_ball;hold;G;G
+495;sports_ball;inspect;T;T
+496;sports_ball;kick;G;G
+497;sports_ball;pick_up      ;G;G
+498;sports_ball;serve;T;T
+499;sports_ball;sign;T;T
+500;sports_ball;spin;G;G
+501;sports_ball;throw;G;G
+502;sports_ball;no_interaction;;
+503;stop_sign;hold;G;G
+504;stop_sign;stand_under ;G;G
+505;stop_sign;stop_at;T;T
+506;stop_sign;no_interaction;;
+507;suitcase;carry;G;G
+508;suitcase;drag;G;G
+509;suitcase;hold;G;G
+510;suitcase;hug;G;G
+511;suitcase;load;T;T
+512;suitcase;open;T;T
+513;suitcase;pack;T;T
+514;suitcase;pick_up;G;G
+515;suitcase;zip;T;T
+516;suitcase;no_interaction;;
+517;surfboard;carry        ;G;G
+518;surfboard;drag;G;G
+519;surfboard;hold;G;G
+520;surfboard;inspect;T;T
+521;surfboard;jump;G;G
+522;surfboard;lie_on;G;G
+523;surfboard;load;T;T
+524;surfboard;ride;T;T
+525;surfboard;stand_on   ;G;G
+526;surfboard;sit_on;G;G
+527;surfboard;wash;G;G
+528;surfboard;no_interaction;;
+529;teddy_bear;carry;G;G
+530;teddy_bear;hold;G;G
+531;teddy_bear;hug;G;G
+532;teddy_bear;kiss;G;G
+533;teddy_bear;no_interaction;;
+534;tennis_racket;carry;G;G
+535;tennis_racket;hold;G;G
+536;tennis_racket;inspect;T;T
+537;tennis_racket;swing;T;T
+538;tennis_racket;no_interaction;;
+539;tie;adjust;T;T
+540;tie;cut;G;G
+541;tie;hold;G;G
+542;tie;inspect;T;T
+543;tie;pull;G;G
+544;tie;tie;T;T
+545;tie;wear         ;T;T
+546;tie;no_interaction;;
+547;toaster;hold        ;G;G
+548;toaster;operate     ;T;T
+549;toaster;repair;T;T
+550;toaster;no_interaction;;
+551;toilet;clean;T;T
+552;toilet;flush;T;T
+553;toilet;open;T;T
+554;toilet;repair;T;T
+555;toilet;sit_on;G;G
+556;toilet;stand_on     ;G;G
+557;toilet;wash;G;G
+558;toilet;no_interaction;;
+559;toothbrush;brush_with ;T;T
+560;toothbrush;hold;G;G
+561;toothbrush;wash;G;G
+562;toothbrush;no_interaction;;
+563;traffic_light;install;T;T
+564;traffic_light;repair;T;T
+565;traffic_light;stand_under  G;;
+566;traffic_light;stop_at;T;T
+567;traffic_light;no_interaction;;
+568;truck;direct;T;T
+569;truck;drive;T;T
+570;truck;inspect;T;T
+571;truck;load;T;T
+572;truck;repair;T;T
+573;truck;ride;T;T
+574;truck;sit_on;G;G
+575;truck;wash;G;G
+576;truck;no_interaction;;
+577;umbrella;carry;G;G
+578;umbrella;hold;G;G
+579;umbrella;lose;T;T
+580;umbrella;open;T;T
+581;umbrella;repair;T;T
+582;umbrella;set;T;T
+583;umbrella;stand_under ;G;G
+584;umbrella;no_interaction;;
+585;vase;hold;G;G
+586;vase;make;T;T
+587;vase;paint;T;T
+588;vase;no_interaction;;
+589;wine_glass;fill;T;T
+590;wine_glass;hold         ;G;G
+591;wine_glass;sip;T;T
+592;wine_glass;toast;T;T
+593;wine_glass;lick;G;G
+594;wine_glass;wash;G;G
+595;wine_glass;no_interaction;;
+596;zebra;feed;T;T
+597;zebra;hold;G;G
+598;zebra;pet;G;G
+599;zebra;watch;G;G
+600;zebra;no_interaction;;

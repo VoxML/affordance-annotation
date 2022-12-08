@@ -28,6 +28,90 @@ HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8.jso
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_lines.json
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_susbet50.json
 
-*.csv
-*.json
 
+
+
+HoiOriClassifier/pair_token_data/pair_token_results_original.json
+HoiOriClassifier/pair_token_data/pair_token_results_original_mod.json
+HoiOriClassifier/pair_token_data/pair_token_results_telic-intent_mod.json
+HoiOriClassifier/pair_token_data/pair_token_results_telic-intent_mod_v2.json
+HoiOriClassifier/results_anno-ori-mod_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_lines.json
+HoiOriClassifier/results_anno_v2_hico_merge_2015_v2_telic-intent_with-unary-pair-token_thresh_0_8_lines.json
+HoiOriClassifier/results_anno_v2_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_lines.json
+HoiOriClassifier/results_objectnet3d_defaultmodel.json
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens TSNE Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod/pair_data/UPT Pair Tokens TSNE Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_10000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_10000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_10000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_10000 anno Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/intent_mod_v2/pair_data/UPT Pair Tokens TSNE Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_100 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_1000 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_1000 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_500 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_500 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_5000 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_5000 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_5000 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_5000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_5000 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_None anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_None anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens PACMAC Inst_None anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_100 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_1000 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_1000 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_500 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_500 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_500 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_500 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_5000 5000 Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_5000 5000 Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_5000 anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_5000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_5000 anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_None anno Gibs.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_None anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Pair Tokens TSNE Inst_None anno Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Person Unary Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Person Unary Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Unary Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original/pair_data/UPT Unary Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens PACMAC Inst_100 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens PACMAC Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens PACMAC Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens PACMAC Inst_5000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens PACMAC Inst_5000 anno Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens TSNE Inst_100 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens TSNE Inst_1000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens TSNE Inst_500 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens TSNE Inst_5000 anno Gibs_Telic.csv
+HoiOriClassifier/images_final/original_mod/pair_data/UPT Pair Tokens TSNE Inst_5000 anno Telic.csv
+HoiOriClassifier/pair_token_results-filter_names_5000.csv
+HoiOriClassifier/pair_token_results-filter_names_5000_test.csv
+HoiOriClassifier/pair_token_results-filter_names_filtered.csv
+HoiOriClassifier/pair_token_results-filter_names_filtered_np.csv
