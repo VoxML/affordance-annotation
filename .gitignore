@@ -18,6 +18,7 @@ HoiOriClassifier/hicodet_cut/*
 HoiOriClassifier/images_old/*
 OriAffCheckClassify/.idea/*
 
+
 HoiOriClassifier/results_hico_merge_2015_v2.json
 HoiOriClassifier/results_hico_merge_2015_v2.json
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-token.json
@@ -25,6 +26,6 @@ HoiOriClassifier/results_hico_merge_2015_v2.json
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8.json
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_lines.json
 HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_susbet50.json
+
 *.csv
-*.json
 *.json
