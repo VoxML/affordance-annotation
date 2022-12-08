@@ -16,6 +16,7 @@ HoiOriClassifier/data/models
 HoiOriClassifier/results_hico_merge_2015.json
 HoiOriClassifier/hicodet_cut/*
 HoiOriClassifier/images_old/*
+HoiOriClassifier/generate_paper_images/*
 OriAffCheckClassify/.idea/*
 
 
@@ -29,3 +30,4 @@ HoiOriClassifier/results_hico_merge_2015_v2_with-unary-pair-token_thresh_0_8_sus
 
 *.csv
 *.json
+
