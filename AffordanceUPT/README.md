@@ -1,4 +1,10 @@
 # UPT: Unary&ndash;Pairwise Transformers
+
+## SetUp
+* Install pocket (needed for UPT): https://github.com/fredzzhang/pocket
+* Transformers with Pytorch: https://huggingface.co/docs/transformers/installation
+* (WandB: https://docs.wandb.ai/quickstart ; Can also be omitted, but must then also be removed from the project)
+
 ## Main Differences to UPT
 ### Model
 AffordanceUPT can be found in upt.py 
