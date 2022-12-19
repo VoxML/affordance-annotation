@@ -1,0 +1,280 @@
+[       nan        nan 0.21988659 0.00637816 0.32196299 0.57225427
+ 0.30477074 0.26946023 0.29352602 0.63404685 0.03190559 0.33536871
+ 0.12791223 0.30757226 0.16880263 0.29212872 0.08298403 0.30189208
+ 0.06167575 0.42664007        nan 0.11363636 0.53636364 0.43593074
+        nan        nan 0.18274899 0.02272727        nan 0.42424242
+ 0.51023601 0.00460969 0.18234428 0.10461825 0.51702546 0.10313216
+ 0.54625449 0.16303471 0.37690076 0.72149081 0.39034195 0.31310025
+ 0.25638154 0.23803191 0.58076267 0.23398578 0.17300234 0.37878788
+ 0.4018595  0.58712121 0.3039841  0.51158633        nan        nan
+ 0.05830465 0.45147618 0.52423709 0.0286887         nan        nan
+        nan        nan 0.26853411 0.0019406  0.00327429 0.43641888
+ 0.32523612 0.10415449 0.48089509 0.10772434 0.11684999 0.36379214
+ 0.18249577 0.51666289 0.34898088 0.31722398 0.12366018 0.27377885
+ 0.04438164 0.37450821 0.03724832 0.30532292 0.32749023 0.56221177
+ 0.49662548 0.39352541 0.19327402 0.41042864 0.28364    0.19850593
+        nan        nan 0.32881731 0.26139166 0.29611321 0.2188021
+ 0.22231405        nan 0.0229319  0.17720892 0.23993784 0.12303486
+ 0.12205723 0.20328321 0.1164393  0.25834627 0.30219513 0.22849272
+ 0.22856531 0.18660176 0.40668884 0.2455452  0.14566234 0.26599314
+ 0.13980716 0.08915691 0.10495543 0.1323664  0.19446854 0.30616779
+ 0.20631197 0.32890633 0.35335088 0.50988398 0.27387632        nan
+ 0.40476557        nan 0.25510248        nan 0.50061415 0.29671995
+        nan        nan 0.12623162 0.45551303        nan        nan
+        nan        nan 0.17086656 0.74770022        nan        nan
+        nan 0.18684285 0.20673035 0.58033889        nan 0.23246753
+ 0.18048392        nan 0.28482166 0.490595   0.1080334  0.1733771
+        nan 0.47315478 0.01505216 0.2323027  0.45454545 0.29545455
+ 0.01818182 0.27597403 0.1958042  0.42519418        nan        nan
+ 0.12786195 0.39799712 0.01048951 0.2590783         nan 0.27272727
+ 0.01728512 0.21769106 0.58926262        nan 0.07009167 0.37464115
+ 0.1906608  0.49947662]
+[       nan        nan 0.77248677 0.95454545 0.60216998 0.79286927
+ 0.77142857 0.52692308 0.56338028 0.80785124 0.42857143 0.53974895
+ 0.54883721 0.52973978 0.62686567 0.50757576 0.54347826 0.56593407
+ 0.44915254 0.57568027        nan 0.16666667 0.83333333 0.6875
+        nan        nan 0.42857143 0.33333333        nan 0.45454545
+ 0.70913462 0.5        0.35761589 0.48214286 0.74324324 0.8
+ 0.82236842 0.77586207 0.74074074 0.84139265 0.7625     0.56179775
+ 0.52564103 0.68067227 0.77819549 0.90909091 0.63636364 0.48148148
+ 0.54545455 1.         0.86764706 0.8245614         nan        nan
+ 0.57       0.72       0.67456897 0.61538462        nan        nan
+        nan        nan 0.73214286 0.25       0.5        0.65641026
+ 0.61403509 0.64705882 0.61352657 0.59459459 0.31543624 0.46578947
+ 0.36923077 0.61471861 0.51953125 0.61728395 0.30097087 0.47368421
+ 0.40909091 0.55897436 0.5        0.56521739 0.66233766 0.76229508
+ 0.66165414 0.64864865 0.57142857 0.71428571 0.44594595 0.43010753
+        nan        nan 0.61971831 0.59090909 0.66666667 0.5
+ 0.38596491        nan 0.31111111 0.31693989 0.39285714 0.27272727
+ 0.38095238 0.66666667 0.34042553 0.40517241 0.56923077 0.43333333
+ 0.61290323 0.51162791 0.58064516 0.4        0.48148148 0.7
+ 0.29545455 0.27906977 0.38461538 0.27152318 0.6        0.62962963
+ 0.51851852 0.56363636 0.67213115 0.75892857 0.53894081        nan
+ 0.65808824        nan 0.66666667        nan 0.81443299 1.
+        nan        nan 0.55031447 0.70735524        nan        nan
+        nan        nan 0.39130435 0.95652174        nan        nan
+        nan 0.51960784 0.71428571 0.84705882        nan 0.35714286
+ 0.32142857        nan 0.63636364 0.71153846 0.23076923 0.46428571
+        nan 0.72727273 0.4        0.48571429 1.         0.35294118
+ 0.5        0.6        0.2        0.9               nan        nan
+ 0.28282828 0.59907834 0.25       0.42857143        nan 0.3
+ 0.3        0.453125   0.78787879        nan 0.6        0.5625
+ 0.52       0.7027027 ]
+The mAP is 0.2756, rare: 0.1790, none-rare: 0.2857 The Recall is 0.5696, rare: 0.6116, none-rare: 0.5652
+========
+0.1:
+{'all_correct': 7206, 'verb_correct_obj_wrong': 548, 'obj_correct_verb_wrong': 1800, 'obj_wrong_verb_wrong': 203, 'all_wrong': 8434, 'missed': 8029}
+
+0.2:
+{'all_correct': 6383, 'verb_correct_obj_wrong': 439, 'obj_correct_verb_wrong': 1487, 'obj_wrong_verb_wrong': 161, 'all_wrong': 4387, 'missed': 9316}
+
+0.3:
+{'all_correct': 5735, 'verb_correct_obj_wrong': 376, 'obj_correct_verb_wrong': 1250, 'obj_wrong_verb_wrong': 142, 'all_wrong': 3147, 'missed': 10283}
+
+
+====== Bicycle ======================================================
+[       nan        nan        nan        nan 0.34145963 0.58077094
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+[       nan        nan        nan        nan 0.60216998 0.79286927
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+The mAP is 0.4611, rare: nan, none-rare: 0.4611 The Recall is 0.6975, rare: nan, none-rare: 0.6975
+========
+{'all_correct': 434, 'verb_correct_obj_wrong': 9, 'obj_correct_verb_wrong': 201, 'obj_wrong_verb_wrong': 11, 'all_wrong': 108, 'missed': 487}
+
+
+========== drive ==============================================================
+
+[       nan        nan        nan        nan        nan        nan
+        nan 0.22931049        nan        nan        nan        nan
+        nan 0.29222669        nan 0.50515293        nan 0.23369452
+        nan 0.47988497        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+[       nan        nan        nan        nan        nan        nan
+        nan 0.46363636        nan        nan        nan        nan
+        nan 0.57857143        nan 0.66666667        nan 0.6
+        nan 0.81081081        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+The mAP is 0.3481, rare: nan, none-rare: 0.3481 The Recall is 0.6239, rare: nan, none-rare: 0.6239
+========
+{'all_correct': 165, 'verb_correct_obj_wrong': 15, 'obj_correct_verb_wrong': 1, 'obj_wrong_verb_wrong': 2, 'all_wrong': 464, 'missed': 185}
+
+
+========== book & read
+
+
+[       nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan 0.54952846        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+[       nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan 0.68862275        nan        nan        nan        nan
+        nan        nan        nan        nan        nan        nan
+        nan        nan]
+The mAP is 0.5495, rare: nan, none-rare: 0.5495 The Recall is 0.6886, rare: nan, none-rare: 0.6886
+========
+{'all_correct': 85, 'verb_correct_obj_wrong': 8, 'obj_correct_verb_wrong': 0, 'obj_wrong_verb_wrong': 3, 'all_wrong': 110, 'missed': 71}
+
