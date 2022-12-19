@@ -29,8 +29,11 @@ The main hyperparameters:
 ### HicoDet Dataset
 The folder under "data-root" should contain: 
 * hico_20160224-det (folder): the original HicoDet dataset
-* instances_train2015.json: Original HicoDet Annotations
-* instances_test2015.json: Original HicoDet Annotations
+  * images
+    * test2015
+    * train2015
+* instances_train2015.json: Original HicoDet Annotations (can be found under: AffordanceUPT/hicodet/instances_train2015.json)
+* instances_test2015.json: Original HicoDet Annotations (can be found under: AffordanceUPT/hicodet/instances_test2015.json)
 * textual_annotations.csv: To be found in this git (affordance-annotation/Annotation Data/textual_annotations.csv)
 
 ### Train
