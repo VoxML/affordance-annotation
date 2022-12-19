@@ -1,4 +1,4 @@
-# UPT: Unary&ndash;Pairwise Transformers
+# AffordanceUPT
 
 ## SetUp
 * Install pocket (needed for UPT): https://github.com/fredzzhang/pocket
